@@ -646,7 +646,7 @@ module adc_cap
     !
     
     if (.false.) then
-        call ESMF_MeshWrite(ModelMesh, filename="adc_mesh.nc", rc=rc)
+        call ESMF_MeshWrite(ModelMesh, filename="adc_mesh", rc=rc)
         if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, &
           file=__FILE__)) &

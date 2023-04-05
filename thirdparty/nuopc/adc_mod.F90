@@ -129,6 +129,7 @@ module adc_mod
         type(meshdata), intent(in)                    :: the_data
         integer, parameter                            :: dim1=2, spacedim=2, NumND_per_El=3
         integer                                       :: rc
+
         out_esmf_mesh=ESMF_MeshCreate(parametricDim=dim1, spatialDim=spacedim, &
             nodeIDs=the_data%NdIDs, nodeCoords=the_data%NdCoords, &
             nodeOwners=the_data%NdOwners, elementIDs=the_data%ElIDs, &
@@ -405,6 +406,7 @@ module adc_mod
         DO I=1, the_data%NumEl  ! MNE   
           READ(funit,*) the_data%ElIDs(I) ; 
         ENDDO
+        the_data%ElIDs = abs(the_data%ElIDs)
 
 !C Read Global number of nodes and Local-to_Global node map ( used by module global_io )
         READ(funit,3015) NP_G_TMP
