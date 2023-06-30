@@ -540,7 +540,9 @@ module adc_cap
     call fld_list_add(num=fldsToAdc_num, fldlist=fldsToAdc, stdname="inst_merid_wind_height10m", shortname= "imwh10m" )
     call fld_list_add(num=fldsToAdc_num, fldlist=fldsToAdc, stdname="inst_zonal_wind_height10m" , shortname= "izwh10m" )
     !--------- export fields from Sea Adc -------------
-    call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="ocean_mask", shortname= "omask" )
+    if (meshloc == ESMF_MESHLOC_ELEMENT) then
+       call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="ocean_mask", shortname= "omask" )
+    end if
     call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="sea_surface_height_above_sea_level",  shortname= "zeta" )
     call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="surface_eastward_sea_water_velocity", shortname= "velx" )
     call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="surface_northward_sea_water_velocity",shortname= "vely" )
@@ -684,7 +686,7 @@ module adc_cap
     call extract_parallel_data_from_mesh_orig(ROOTDIR, mdata, localPet)
     ! keep only non-ghost elements, required for CMEPS coupling
     if (meshloc == ESMF_MESHLOC_ELEMENT) then
-       call eliminate_ghosts(mdata, localPet)
+       call eliminate_ghosts(mdata, vm)
     end if
     !    print *,"ADC ..2.............................................. >> "
     call create_parallel_esmf_mesh_from_meshdata(mdata,ModelMesh)
@@ -726,15 +728,17 @@ module adc_cap
       return  ! bail out
 
     ! add mask information as export field, required for CMEPS coupling
-    call State_getFldPtr_(ST=exportState, fldname='omask', fldptr=dataPtr_mask, &
-      rc=rc,dump=.false.,timeStr=timeStr)
+    if (meshloc == ESMF_MESHLOC_ELEMENT) then
+       call State_getFldPtr_(ST=exportState, fldname='omask', fldptr=dataPtr_mask, &
+         rc=rc,dump=.false.,timeStr=timeStr)
 
-      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-        line=__LINE__, &
-        file=__FILE__)) &
-        return  ! bail out
+         if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+           line=__LINE__, &
+           file=__FILE__)) &
+           return  ! bail out
 
-    dataPtr_mask = 0.0
+       dataPtr_mask = 0.0
+    end if
 
 ! Sep 2021
 ! DW ! Initialized an export fileds, zeta, velx, vely
