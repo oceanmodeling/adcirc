@@ -686,7 +686,7 @@ module adc_cap
     call extract_parallel_data_from_mesh_orig(ROOTDIR, mdata, localPet)
     ! keep only non-ghost elements, required for CMEPS coupling
     if (meshloc == ESMF_MESHLOC_ELEMENT) then
-       call eliminate_ghosts(mdata, vm)
+       call eliminate_ghosts(mdata, localPet)
     end if
     !    print *,"ADC ..2.............................................. >> "
     call create_parallel_esmf_mesh_from_meshdata(mdata,ModelMesh)
