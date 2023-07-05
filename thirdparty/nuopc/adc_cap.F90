@@ -194,8 +194,8 @@ module adc_cap
  ! USE GLOBAL,  ONLY: WTIMINC             ! wind time interval  may be set in ATM.cap or ........  <<:TODO:
   USE WIND,  ONLY: WTIMINC             ! wind time interval  may be set in ATM.cap or ........  <<:TODO:
   USE GLOBAL,  ONLY: RSTIMINC            ! wave time interval
-  use GLOBAL,  ONLY: RhoWat0, NWS, g
-  use GLOBAL,  only: ITHS, NT, DTDP, ITIME
+  use CONSTANTS,  ONLY: RhoWat0, g
+  use GLOBAL,  only: NWS, ITHS, NT, DTDP, ITIME
   use GLOBAL,  only: allMessage
 
   use SIZES  , only: ROOTDIR
@@ -686,7 +686,7 @@ module adc_cap
     call extract_parallel_data_from_mesh_orig(ROOTDIR, mdata, localPet)
     ! keep only non-ghost elements, required for CMEPS coupling
     if (meshloc == ESMF_MESHLOC_ELEMENT) then
-       call eliminate_ghosts(mdata, vm)
+       call eliminate_ghosts(mdata, localPet)
     end if
     !    print *,"ADC ..2.............................................. >> "
     call create_parallel_esmf_mesh_from_meshdata(mdata,ModelMesh)
