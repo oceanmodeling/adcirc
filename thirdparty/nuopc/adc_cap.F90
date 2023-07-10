@@ -256,7 +256,7 @@ module adc_cap
 
   ! config options
   type(ESMF_MeshLoc) :: meshloc
-  logical :: dbug = .false.
+  logical :: dbug
 
   !-----------------------------------------------------------------------------
   contains
@@ -540,9 +540,7 @@ module adc_cap
     call fld_list_add(num=fldsToAdc_num, fldlist=fldsToAdc, stdname="inst_merid_wind_height10m", shortname= "imwh10m" )
     call fld_list_add(num=fldsToAdc_num, fldlist=fldsToAdc, stdname="inst_zonal_wind_height10m" , shortname= "izwh10m" )
     !--------- export fields from Sea Adc -------------
-    if (meshloc == ESMF_MESHLOC_ELEMENT) then
-       call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="ocean_mask", shortname= "omask" )
-    end if
+    call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="ocean_mask", shortname= "omask" )
     call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="sea_surface_height_above_sea_level",  shortname= "zeta" )
     call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="surface_eastward_sea_water_velocity", shortname= "velx" )
     call fld_list_add(num=fldsFrAdc_num, fldlist=fldsFrAdc, stdname="surface_northward_sea_water_velocity",shortname= "vely" )
@@ -683,10 +681,10 @@ module adc_cap
     !print *,localPet,"< LOCAL pet, ADC ..1.............................................. >> "
     ! create a Mesh object for Fields
     !call extract_parallel_data_from_mesh(ROOTDIR, mdata, localPet)
-    call extract_parallel_data_from_mesh_orig(ROOTDIR, mdata, localPet)
+    call extract_parallel_data_from_mesh_orig(ROOTDIR, mdata, localPet, meshloc)
     ! keep only non-ghost elements, required for CMEPS coupling
     if (meshloc == ESMF_MESHLOC_ELEMENT) then
-       call eliminate_ghosts(mdata, localPet)
+       call eliminate_ghosts(mdata, localPet, dbug)
     end if
     !    print *,"ADC ..2.............................................. >> "
     call create_parallel_esmf_mesh_from_meshdata(mdata,ModelMesh)
@@ -727,18 +725,23 @@ module adc_cap
       file=__FILE__)) &
       return  ! bail out
 
-    ! add mask information as export field, required for CMEPS coupling
-    if (meshloc == ESMF_MESHLOC_ELEMENT) then
-       call State_getFldPtr_(ST=exportState, fldname='omask', fldptr=dataPtr_mask, &
-         rc=rc,dump=.false.,timeStr=timeStr)
+! Jul 2023
+! UT ! Initialized an export field omask
+    do num = 1, fldsFrAdc_num
+       if (fldsFrAdc(num)%shortname == 'omask' .and. fldsFrAdc(num)%connected) then 
+          call State_getFldPtr_(ST=exportState, fldname='omask', fldptr=dataPtr_mask, &
+            rc=rc,dump=.false.,timeStr=timeStr)
+          if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+            line=__LINE__, &
+            file=__FILE__)) &
+            return  ! bail out
 
-         if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-           line=__LINE__, &
-           file=__FILE__)) &
-           return  ! bail out
-
-       dataPtr_mask = 0.0
-    end if
+          !do i1 = 1, mdataOut%NumOwnedNd, 1
+          !   dataPtr_mask(i1) = ???(mdataOut%owned_to_present_nodes(i1)) ;
+          !end do
+          dataPtr_mask = 0.0
+       end if
+    end do
 
 ! Sep 2021
 ! DW ! Initialized an export fileds, zeta, velx, vely
@@ -801,7 +804,7 @@ module adc_cap
 
     ! dump export state
     if (dbug) then
-       call StateWriteVTK(exportState, 'export_initial', rc=rc)
+       call StateWriteVTK(exportState, 'export_ini', rc=rc)
        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
            line=__LINE__, &
            file=__FILE__)) &
@@ -1527,16 +1530,16 @@ module adc_cap
         !print *, info
         !stop
     endif
-   surge_forcing= .true.
-   do num = 1,fldsFrAdc_num
-      if (fldsFrAdc(num)%shortname == 'zeta') surge_forcing = surge_forcing .and. fldsFrAdc(num)%connected
-      if (fldsFrAdc(num)%shortname == 'velx') surge_forcing = surge_forcing .and. fldsFrAdc(num)%connected
-      if (fldsFrAdc(num)%shortname == 'vely') surge_forcing = surge_forcing .and. fldsFrAdc(num)%connected
-   end do
+    surge_forcing= .true.
+    do num = 1,fldsFrAdc_num
+       if (fldsFrAdc(num)%shortname == 'zeta') surge_forcing = surge_forcing .and. fldsFrAdc(num)%connected
+       if (fldsFrAdc(num)%shortname == 'velx') surge_forcing = surge_forcing .and. fldsFrAdc(num)%connected
+       if (fldsFrAdc(num)%shortname == 'vely') surge_forcing = surge_forcing .and. fldsFrAdc(num)%connected
+    end do
 
     ! dump import state
     if (dbug) then
-       call StateWriteVTK(importState, 'state_import_'//trim(timeStr), rc=rc)
+       call StateWriteVTK(importState, 'state_imp_'//trim(timeStr), rc=rc)
        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
          line=__LINE__, &
          file=__FILE__)) &
@@ -1622,7 +1625,7 @@ module adc_cap
 
     ! dump export state
     if (dbug) then
-       call StateWriteVTK(exportState, 'state_export_'//trim(timeStr), rc=rc)
+       call StateWriteVTK(exportState, 'state_exp_'//trim(timeStr), rc=rc)
        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
          line=__LINE__, &
          file=__FILE__)) &

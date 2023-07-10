@@ -288,12 +288,13 @@ module adc_mod
     ! DW:
     !   - extract message data from PExxxx/fort.18  
     !   - extract mesh from   PExxxx/fort.14
-    subroutine extract_parallel_data_from_mesh_orig(global_fort14_dir, the_data,localPet)
+    subroutine extract_parallel_data_from_mesh_orig(global_fort14_dir, the_data, localPet, meshloc)
         implicit none
 
         type(meshdata), intent(inout)         :: the_data
         character(len=*), intent(in)          :: global_fort14_dir
         integer, intent(in)                   :: localPet
+        type(ESMF_MeshLoc), intent(in)        :: meshloc          
         character(len=6)                      :: PE_ID, garbage1
         
         character(len=200)                    :: fort14_filename, fort18_filename, partmesh_filename
@@ -335,7 +336,7 @@ module adc_mod
         allocate(the_data%ElCoords(dim1*the_data%NumEl))
 
         the_data%ElTypes = ESMF_MESHELEMTYPE_TRI
-        CALL EXTRACT_MSG_TABLE_FORT18( fort18_filename, the_data )
+        CALL EXTRACT_MSG_TABLE_FORT18( fort18_filename, the_data, meshloc)
 
 !        !  todo: Modify reading fort.18 using the same procedure as reading fort18 in messenger.F
 !        read(unit=23518, fmt=*)
@@ -421,11 +422,12 @@ module adc_mod
     end subroutine extract_parallel_data_from_mesh_orig
 
     !-----------------------------------------------------------------------------
-    subroutine eliminate_ghosts(the_data, localPet)
+    subroutine eliminate_ghosts(the_data, localPet, dbug)
         implicit none
 
         type(meshdata), intent(inout) :: the_data
         integer, intent(in)           :: localPet
+        logical, intent(in)           :: dbug
 
         ! local variables
         integer :: i, j, k, indx, indx2
@@ -462,25 +464,27 @@ module adc_mod
         end do
 
         ! debug
-        do i = 1, the_data%NumEl
-           ! get node owners
-           pe1 = the_data%NdOwners(the_data%ElConnect((i-1)*NumND_per_El+1))
-           pe2 = the_data%NdOwners(the_data%ElConnect((i-1)*NumND_per_El+2))
-           pe3 = the_data%NdOwners(the_data%ElConnect((i-1)*NumND_per_El+3))
+        if (dbug) then
+           do i = 1, the_data%NumEl
+              ! get node owners
+              pe1 = the_data%NdOwners(the_data%ElConnect((i-1)*NumND_per_El+1))
+              pe2 = the_data%NdOwners(the_data%ElConnect((i-1)*NumND_per_El+2))
+              pe3 = the_data%NdOwners(the_data%ElConnect((i-1)*NumND_per_El+3))
 
-           write(msgString,'(8I8)') the_data%ElIDs(i), ElMask(i), pe1, pe2, pe3, &
-             the_data%ElConnectG((i-1)*NumND_per_El+1), &
-             the_data%ElConnectG((i-1)*NumND_per_El+2), &
-             the_data%ElConnectG((i-1)*NumND_per_El+3)
-           call ESMF_LogWrite(subname//' EMASK: '//trim(msgString), ESMF_LOGMSG_INFO)
-        end do
+              write(msgString,'(8I8)') the_data%ElIDs(i), ElMask(i), pe1, pe2, pe3, &
+                the_data%ElConnectG((i-1)*NumND_per_El+1), &
+                the_data%ElConnectG((i-1)*NumND_per_El+2), &
+                the_data%ElConnectG((i-1)*NumND_per_El+3)
+              call ESMF_LogWrite(subname//' EMASK: '//trim(msgString), ESMF_LOGMSG_INFO)
+           end do
+        end if
 
         ElMask = abs(ElMask)
 
         ! number of elements without ghosts
         NumEl_nog = count(mask=ElMask > 0)
         write(msgString,'(A,I8,A,I8)') 'NumEl = ', size(the_data%ElIDs), ' NumEl_no_ghost = ', NumEl_nog
-        call ESMF_LogWrite(subname//' '//trim(msgString), ESMF_LOGMSG_INFO)
+        if (dbug) call ESMF_LogWrite(subname//' '//trim(msgString), ESMF_LOGMSG_INFO)
 
         ! allocate temporary arrays for element
         if (.not. allocated(ElIDs)) allocate(ElIDs(NumEl_nog))
@@ -510,7 +514,7 @@ module adc_mod
         minNdIDs = minval(ElConnect, dim=1)
         maxNdIDs = maxval(ElConnect, dim=1)
         write(msgString,'(2I8)') minNdIDs, maxNdIDs
-        call ESMF_LogWrite(subname//' minNdIDs, maxNdIDs: '//trim(msgString), ESMF_LOGMSG_INFO)
+        if (dbug) call ESMF_LogWrite(subname//' minNdIDs, maxNdIDs: '//trim(msgString), ESMF_LOGMSG_INFO)
 
         ! create mask for unique list of nodes in the element connection
         if (.not. allocated(NdMask)) allocate(NdMask(the_data%NumNd))
@@ -531,17 +535,19 @@ module adc_mod
         end do
 
         ! debug, print nodeids and associated masks
-        do i = 1, the_data%NumNd
-           write(msgString,'(3I8)') the_data%NdIDs(i), NdMask(i), the_data%NdOwners(i)
-           call ESMF_LogWrite(subname//' NMASK: '//trim(msgString), ESMF_LOGMSG_INFO)
-        end do
+        if (dbug) then
+           do i = 1, the_data%NumNd
+              write(msgString,'(3I8)') the_data%NdIDs(i), NdMask(i), the_data%NdOwners(i)
+              call ESMF_LogWrite(subname//' NMASK: '//trim(msgString), ESMF_LOGMSG_INFO)
+           end do
+        end if
 
         ! number of nodes without ghosts
         NumNd_nog = count(mask=NdMask .gt. 0)
         write(msgString,'(A,I8,A,I8)') 'NumNd = ', size(the_data%NdIDs), ' NumNd_no_ghost = ', NumNd_nog
-        call ESMF_LogWrite(subname//' '//trim(msgString), ESMF_LOGMSG_INFO)
+        if (dbug) call ESMF_LogWrite(subname//' '//trim(msgString), ESMF_LOGMSG_INFO)
         write(msgString,'(A,2I8)') 'NdMask min/max = ', minval(NdMask, dim=1, mask=NdMask .gt. 0), maxval(NdMask, dim=1, mask=NdMask .gt. 0)
-        call ESMF_LogWrite(subname//' '//trim(msgString), ESMF_LOGMSG_INFO)
+        if (dbug) call ESMF_LogWrite(subname//' '//trim(msgString), ESMF_LOGMSG_INFO)
 
         ! allocate temporary arrays for node 
         if (.not. allocated(NdIDs)) allocate(NdIDs(NumNd_nog))
@@ -642,22 +648,24 @@ module adc_mod
            deallocate(bathymetry)
         end if
 
-        ! debug, output local, global ids and coordinates of nodes accociated with element
-        do i = 1, the_data%NumEl
-           write(msgString,'(7I8,2F8.3)') the_data%ElIDs(i), &
-             the_data%ElConnect((i-1)*NumND_per_El+1), the_data%ElConnect((i-1)*NumND_per_El+2), the_data%ElConnect((i-1)*NumND_per_El+3), &
-             the_data%ElConnectG((i-1)*NumND_per_El+1), the_data%ElConnectG((i-1)*NumND_per_El+2), the_data%ElConnectG((i-1)*NumND_per_El+3), &
-             the_data%ElCoords((i-1)*dim1+1), the_data%ElCoords((i-1)*dim1+2)
-           call ESMF_LogWrite(subname//' ELEM: '//trim(msgString), ESMF_LOGMSG_INFO)
-        end do
+        if (dbug) then
+           ! debug, output local, global ids and coordinates of nodes accociated with element
+           do i = 1, the_data%NumEl
+              write(msgString,'(7I8,2F8.3)') the_data%ElIDs(i), &
+                the_data%ElConnect((i-1)*NumND_per_El+1), the_data%ElConnect((i-1)*NumND_per_El+2), the_data%ElConnect((i-1)*NumND_per_El+3), &
+                the_data%ElConnectG((i-1)*NumND_per_El+1), the_data%ElConnectG((i-1)*NumND_per_El+2), the_data%ElConnectG((i-1)*NumND_per_El+3), &
+                the_data%ElCoords((i-1)*dim1+1), the_data%ElCoords((i-1)*dim1+2)
+              call ESMF_LogWrite(subname//' ELEM: '//trim(msgString), ESMF_LOGMSG_INFO)
+           end do
 
-        ! debug, output nodeid, owners and coordinates
-        do i = 1, the_data%NumNd
-           write(msgString,'(2I8,3F10.3)') the_data%NdIDs(i), the_data%NdOwners(i), &
-             the_data%NdCoords((i-1)*dim1+1), the_data%NdCoords((i-1)*dim1+2), &
-             the_data%bathymetry(i)
-           call ESMF_LogWrite(subname//' NODE: '//trim(msgString), ESMF_LOGMSG_INFO)
-        end do
+           ! debug, output nodeid, owners and coordinates
+           do i = 1, the_data%NumNd
+              write(msgString,'(2I8,3F10.3)') the_data%NdIDs(i), the_data%NdOwners(i), &
+                the_data%NdCoords((i-1)*dim1+1), the_data%NdCoords((i-1)*dim1+2), &
+                the_data%bathymetry(i)
+              call ESMF_LogWrite(subname//' NODE: '//trim(msgString), ESMF_LOGMSG_INFO)
+           end do
+        end if
 
         ! message for exiting call
         call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
@@ -666,11 +674,12 @@ module adc_mod
 
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !CC   DW --- Taken from MSG_TABLE() in messenger.F 
-      SUBROUTINE EXTRACT_MSG_TABLE_FORT18( fort18_filename, the_data )
+      SUBROUTINE EXTRACT_MSG_TABLE_FORT18( fort18_filename, the_data, meshloc )
         IMPLICIT NONE
 
         CHARACTER (LEN=*):: fort18_filename 
-        type (meshdata), intent(inout):: the_data 
+        type (meshdata), intent(inout):: the_data
+        type (ESMF_MeshLoc) :: meshloc
 
         ! local !
         INTEGER :: IDPROC, NLOCAL, I, J, jdumy_loc
@@ -699,14 +708,14 @@ module adc_mod
         DO I=1, the_data%NumEl  ! MNE   
           READ(funit,*) the_data%ElIDs(I) ; 
         ENDDO
-        !the_data%ElIDs = abs(the_data%ElIDs)
+        if (meshloc /= ESMF_MESHLOC_ELEMENT) the_data%ElIDs = abs(the_data%ElIDs)
 
 !C Read Global number of nodes and Local-to_Global node map ( used by module global_io )
         READ(funit,3015) NP_G_TMP
         DO I=1, the_data%NumNd ! MNP
             READ(funit,*) the_data%NdIds(I) ; 
         ENDDO
-        !the_data%NdIds = abs(the_data%NdIds) ; 
+        if (meshloc /= ESMF_MESHLOC_ELEMENT) the_data%NdIds = abs(the_data%NdIds) ; 
 
 !C  This information is provided for relocalizing fort.15
 !C  Just read past it.
