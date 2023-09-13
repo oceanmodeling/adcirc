@@ -527,12 +527,14 @@ C
          allocate(boundaryWeights(mnp))
          boundaryWeights(:) = 0
 
+C... - DW
          SELECT CASE(partition_approach)
          CASE (1)
             call metis()
          CASE (2)
             call metis_npart_from_epart() 
          END SELECT
+C... 
 
          if (strictBoundaries.eqv..true.) then
             ! check for issues with subdomain boundaries
@@ -571,12 +573,15 @@ C
      &               repartitionLimit,' attempts.'
                   CALL EXIT(1)
                endif
+  
+C... DW               
                SELECT CASE(partition_approach)
                CASE (1)
                   call metis() 
                CASE (2)
                   call metis_npart_from_epart() 
-               END SELECT     
+               END SELECT 
+C...
             end do
          endif
          print *, 'INFO: METIS has partitioned nodes successfully.'
