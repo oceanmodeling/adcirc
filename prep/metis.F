@@ -1,3 +1,11 @@
+      MODULE METIS_PARTITION 
+
+      USE PRE_GLOBAL
+      IMPLICIT NONE
+      
+
+      CONTAINS
+
       SUBROUTINE METIS()
       USE PRE_GLOBAL
       IMPLICIT NONE
@@ -397,3 +405,159 @@ C
 c-----------------------------------------------------------------------
       END SUBROUTINE METIS
 c-----------------------------------------------------------------------
+
+C----------------------------------------------------------------------
+C DW:
+C     Todo: will add some description 
+C     Todo: will need to check efficiency of runs from this partition
+C           approach 
+C----------------------------------------------------------------------
+      SUBROUTINE METIS_NPART_FROM_EPART()
+        USE PRE_GLOBAL
+        IMPLICIT NONE
+
+        LOGICAL FOUND, SYMMETRIC
+        INTEGER MNED, MNEDLOC, IDUMP
+        INTEGER I, J, K, IEL, INODE, JNODE, NCOUNT, ITOT, NEDGETOT
+        INTEGER MAXDUALS
+        INTEGER  WEIGHTFLAG, NUMFLAG, NPARTS, OPTIONS(5)
+        INTEGER  EDGECUT, OPTYPE
+        INTEGER(8) NBYTES
+C
+        INTEGER,ALLOCATABLE :: IDUALS(:,:),ITVECT(:),ITVECT2(:)
+        INTEGER,ALLOCATABLE :: XADJ(:), ADJNCY(:)
+        INTEGER,ALLOCATABLE :: VWGTS(:), EWGTS(:)
+        INTEGER,ALLOCATABLE :: CO_NODES(:,:),NEDGES(:), NEDLOC(:)
+        INTEGER,ALLOCATABLE :: NUMDUALS(:)
+
+        INTEGER:: ID1, ID2       
+        INTEGER, ALLOCATABLE:: NNEG_TMP(:,:), PERBC_IDN_MAP(:)
+        
+        INTEGER:: ETYPE, NV
+        INTEGER, ALLOCATABLE:: ELMNTS(:)
+        INTEGER, ALLOCATABLE:: EPART(:), NPART(:)
+        INTEGER, ALLOCATABLE:: IDX(:,:)
+
+        INTEGER:: IPROC, NID
+
+        integer :: contiguous ! number of nodes on a boundary within a particular subdomain
+        integer :: subdomainNumber ! subdomain that a boundary node falls within
+        
+        EXTERNAL metis_estimatememory
+        EXTERNAL METIS_PartMeshDual, METIS_PartMeshNodal
+
+C   METIS 4
+        ETYPE = 1 ; NV = 3 ;
+        ALLOCATE( ELMNTS(MNE*NV ) ) ; 
+        ALLOCATE( EPART(MNE), NPART(MNP) ) ;         
+        ALLOCATE( IDX(MNE,2) ) ; 
+
+        IF ( NPERBC > 0 ) THEN
+           ALLOCATE( NNEG_TMP(3,MNE) ) ; 
+           NNEG_TMP = NNEG ; ! dummy array holding the original element table
+
+           ALLOCATE( PERBC_IDN_MAP(MNP) ) ; ! create mapping between the original node indice and perbc node indices
+           DO J = 1,MNP
+              PERBC_IDN_MAP(J) = J;  
+           ENDDO
+           PERBC_IDN_MAP(IPERCONN(1:NPERBC,2)) = IPERCONN(1:NPERBC,1) ; 
+ 
+           DO I = 1, MNE
+               NNEG(:,I) = PERBC_IDN_MAP( NNEG(:,I) ) ;  ! swicth to the element with the node-per bc indices ! 
+           END DO
+        END IF
+
+        write(*,'(a)') ""
+        write(*,'(a)') "INFO: Grid Partition using METIS 4.0"// 
+     &           " METIS_PartMeshDual()"
+        
+        NUMFLAG = 1 ; 
+        NPARTS = MNPROC ;
+        ELMNTS = reshape( NNEG, (/ MNE*NV /) ) ;
+
+        CALL METIS_PartMeshDual( MNE, MNP, ELMNTS, ETYPE, 
+     &                NUMFLAG, NPARTS, EDGECUT, EPART, NPART ) ;     
+
+        !
+        ! NOTE: 
+        !  Create npart from epart                                         
+        !   - Reversing the order in which prep uses
+        !     to classify an element type (reident/ghost see  decmp.F)
+        !   - This implementation has no consequence in ADCIRC itself. 
+        !     It is done so that the resulting fort.18 files from the localization
+        !     of the mesh are compatible with the ESMF mesh definition.
+        !          
+        IDX(:,1) = (/ (IEL, IEL = 1, MNE) /) ;
+        
+        NPART(:) = -1 ;
+        IPROCLOOP: DO IPROC = NPARTS, 1, -1
+          !        
+          IDX(:,2) = -1 ; 
+          IDX(:,2) = PACK( IDX(:,1), EPART == IPROC, IDX(:,2) ) 
+          
+          I = 1 ;
+          DO WHILE( IDX(I,2) > -1 )
+            IEL = IDX(I,2) ;
+            !
+            DO J = 1, NV
+               NID = NNEG(J, IEL) ; 
+           
+               IF ( NPART(NID) == -1 ) THEN
+                  NPART(NID) = IPROC 
+               END IF
+            END DO
+            !
+            I = I + 1 ;  
+          END DO
+
+          !
+          ! DO IEL = 1, MNE
+          !   !
+          !   IF ( EPART(IEL) == IPROC ) THEN
+          !      DO J = 1, ETYPE
+          !          NID = NNEG(J, IEL) ; 
+          ! 
+          !           IF ( NPART(NID) == -1 ) THEN
+          !             NPART(NID) = IPROC 
+          !          END IF
+          !      END DO            
+          !   ENDIF
+          !   !        
+          ! END DO
+          !
+        END DO IPROCLOOP
+
+        PROC = NPART ; 
+
+!C.......    periodic bcs 
+      IF ( NPERBC > 0 ) THEN
+         PROC( IPERCONN(1:NPERBC,2) ) = PROC(IPERCONN(1:NPERBC,1) ) ;
+
+         NNEG = NNEG_TMP ; ! restore the orignial element table 
+         DEALLOCATE( NNEG_TMP ) ; ! free memory
+         DEALLOCATE( PERBC_IDN_MAP ) ;
+      END IF
+!C......
+
+      write(*,'(a)') 'INFO: Writing mesh partition to partmesh.txt.'
+      OPEN(990,FILE='partmesh.txt')
+
+      DO I=1, MNP
+         WRITE(990,*) PROC(I) ;
+      ENDDO
+      CLOSE(990)
+ 
+      DEALLOCATE( ELMNTS ) ; 
+      DEALLOCATE( EPART, NPART ) ;         
+      DEALLOCATE( IDX ) ;
+
+ 100  FORMAT(4I10)
+ 200  FORMAT(100I10)
+C
+      RETURN
+c-----------------------------------------------------------------------
+      END SUBROUTINE METIS_NPART_FROM_EPART
+c-----------------------------------------------------------------------
+
+      END MODULE METIS_PARTITION 
+     
