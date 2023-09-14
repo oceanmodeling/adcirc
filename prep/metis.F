@@ -408,9 +408,27 @@ c-----------------------------------------------------------------------
 
 C----------------------------------------------------------------------
 C DW:
-C     Todo: will add some description 
+C 
+C 
 C     Todo: will need to check efficiency of runs from this partition
-C           approach 
+C           approach. 
+C     
+C   - This subroutine implement an dlternative option to decompose a mesh. 
+C     This subroutine calls METIS_PartMeshDual() which partitions a dual 
+C     graph of a given fort.14 into MNPROC parts. 
+C   - A parition of FEM nodes required in ADCIRC is then built from the
+C     the element partitions, 'epart', produced by METIS_PartMeshDual.
+C   - Such a partion assisgn ownership of nodes based in reversing the order
+C     in which prep uses to assign an element type (reident/ghost see  decmp.F)
+C   - This implementation has no consequence in ADCIRC itself. 
+C   - It is done so that the resulting fort.18 files from the localization
+C     of the mesh are compatible with the ESMF mesh definition.
+C   - To invoke this option, specify '--partmesh_npart_from_epart' as
+C     input arguement of adcprep or chosse -1 option if use adcprep
+C     interactively.
+C
+C      
+C  Date: Sep 2023    
 C----------------------------------------------------------------------
       SUBROUTINE METIS_NPART_FROM_EPART()
         USE PRE_GLOBAL
