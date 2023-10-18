@@ -370,6 +370,7 @@ module adc_mod
 
         ! construct element coordinates
         if (.not. allocated(xc)) allocate(xc(2,ne))
+        xc(:,:) = 0.0_SZ
         do i1 = 1, the_data%NumEl, 1
            xc(1,i1) = xc(1,i1) + sum(vx(1,etov(:,i1)))/3.0  ;
            xc(2,i1) = xc(2,i1) + sum(vx(2,etov(:,i1)))/3.0   ;
