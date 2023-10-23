@@ -134,48 +134,62 @@ module adc_mod
     !! should be called prior to calling this function.
     !! \param the_data This the input meshdata object.
     !! \param out_esmf_mesh This is the ouput ESMF_Mesh object.
-    subroutine create_parallel_esmf_mesh_from_meshdata(the_data, out_esmf_mesh)
+    subroutine create_parallel_esmf_mesh_from_meshdata(the_data, meshloc, out_esmf_mesh)
         implicit none
-        type(ESMF_Mesh), intent(out) :: out_esmf_mesh
-        type(meshdata), intent(in)   :: the_data
-        integer, parameter           :: dim1=2, spacedim=2, NumND_per_El=3
-        type(ESMF_Distgrid)          :: nodeDistgrid, elementDistgrid
-        integer                      :: rc
+        type(ESMF_Mesh), intent(out)   :: out_esmf_mesh
+        type(meshdata), intent(in)     :: the_data
+        type(ESMF_MeshLoc), intent(in) :: meshloc
+        integer, parameter             :: dim1=2, spacedim=2, NumND_per_El=3
+        type(ESMF_Distgrid)            :: nodeDistgrid, elementDistgrid
+        integer                        :: rc
 
-        ! create node distgrid
-        nodeDistgrid = ESMF_DistgridCreate(the_data%NdIDs, rc=rc)
-
-        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-            line=__LINE__, &
-            file=__FILE__)) &
-            return  ! bail out
-
-        ! create element distgrid
-        elementDistgrid = ESMF_DistgridCreate(the_data%ElIDs, rc=rc)
-
-        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-            line=__LINE__, &
-            file=__FILE__)) &
-            return  ! bail out
-
-        ! create mesh
-        out_esmf_mesh=ESMF_MeshCreate(parametricDim=dim1, spatialDim=spacedim, &
-            nodeIDs=abs(the_data%NdIDs), &
-            nodeCoords=the_data%NdCoords, &
-            nodeOwners=the_data%NdOwners, &
-            nodalDistgrid=nodeDistgrid, &
-            elementIDs=abs(the_data%ElIDs), &
-            elementTypes=the_data%ElTypes, &
-            elementConn=the_data%ElConnect, &
-            elementCoords=the_data%ElCoords, &
-            elementDistgrid=elementDistgrid, &
-            coordSys=ESMF_COORDSYS_SPH_DEG, &
+        if (meshloc /= ESMF_MESHLOC_ELEMENT) then 
+           out_esmf_mesh=ESMF_MeshCreate(parametricDim=dim1, spatialDim=spacedim, &
+            nodeIDs=the_data%NdIDs, nodeCoords=the_data%NdCoords, &
+            nodeOwners=the_data%NdOwners, elementIDs=the_data%ElIDs, &
+            elementTypes=the_data%ElTypes, elementConn=the_data%ElConnect, &
             rc=rc)
 
-        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-            line=__LINE__, &
-            file=__FILE__)) &
-            return  ! bail out
+           if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+               line=__LINE__, &
+               file=__FILE__)) &
+               return  ! bail out
+        else
+           ! create node distgrid
+           nodeDistgrid = ESMF_DistgridCreate(the_data%NdIDs, rc=rc)
+
+           if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+               line=__LINE__, &
+               file=__FILE__)) &
+               return  ! bail out
+
+           ! create element distgrid
+           elementDistgrid = ESMF_DistgridCreate(the_data%ElIDs, rc=rc)
+
+           if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+               line=__LINE__, &
+               file=__FILE__)) &
+               return  ! bail out
+
+           ! create mesh
+           out_esmf_mesh=ESMF_MeshCreate(parametricDim=dim1, spatialDim=spacedim, &
+               nodeIDs=abs(the_data%NdIDs), &
+               nodeCoords=the_data%NdCoords, &
+               nodeOwners=the_data%NdOwners, &
+               nodalDistgrid=nodeDistgrid, &
+               elementIDs=abs(the_data%ElIDs), &
+               elementTypes=the_data%ElTypes, &
+               elementConn=the_data%ElConnect, &
+               elementCoords=the_data%ElCoords, &
+               elementDistgrid=elementDistgrid, &
+               coordSys=ESMF_COORDSYS_SPH_DEG, &
+               rc=rc)
+
+           if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+               line=__LINE__, &
+               file=__FILE__)) &
+               return  ! bail out
+        end if
 
     end subroutine
     !
@@ -370,7 +384,7 @@ module adc_mod
 
         ! construct element coordinates
         if (.not. allocated(xc)) allocate(xc(2,ne))
-        xc(:,:) = 0.0_SZ
+        xc(:,:) = 0.0
         do i1 = 1, the_data%NumEl, 1
            xc(1,i1) = xc(1,i1) + sum(vx(1,etov(:,i1)))/3.0  ;
            xc(2,i1) = xc(2,i1) + sum(vx(2,etov(:,i1)))/3.0   ;

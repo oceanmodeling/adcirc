@@ -687,7 +687,7 @@ module adc_cap
        call eliminate_ghosts(mdata, localPet, dbug)
     end if
     !    print *,"ADC ..2.............................................. >> "
-    call create_parallel_esmf_mesh_from_meshdata(mdata,ModelMesh)
+    call create_parallel_esmf_mesh_from_meshdata(mdata, meshloc, ModelMesh)
     !    print *,"ADC ..3.............................................. >> "
     !
     

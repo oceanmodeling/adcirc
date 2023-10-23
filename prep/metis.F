@@ -17,6 +17,14 @@
 ! along with this program.  If not, see <http://www.gnu.org/licenses/>.
 !
 !-------------------------------------------------------------------------------!
+      MODULE METIS_PARTITION 
+
+      USE PRE_GLOBAL
+      IMPLICIT NONE
+      
+
+      CONTAINS
+
       SUBROUTINE METIS()
       USE PRE_GLOBAL
       IMPLICIT NONE
@@ -589,4 +597,3 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 
       END MODULE METIS_PARTITION 
-     
