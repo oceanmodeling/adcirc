@@ -1,9 +1,18 @@
-if(PRECISION_8BYTE)
-  set(PRECISION_FLAG "REAL8")
-else(PRECISION_8BYTE)
-  set(PRECISION_FLAG "REAL4")
-  message(WARNING "Using double precision is recommended on modern computing systems. Recommend turning on PRECISION_8BYTE as is the default")
-endif(PRECISION_8BYTE)
+# ######################################################################################################################
+#
+# ADCIRC - The ADvanced CIRCulation model Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+# Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# ######################################################################################################################
 
 if(SUN)
   set(MACHINE_FLAG "CMACHSUN")

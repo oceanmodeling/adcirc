@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C
 C  Version 1.1  vjp  5/04/99
 C
@@ -28,9 +47,9 @@ C
       INTEGER NSPOOLE1,NSPOOLE2 
       INTEGER IREC1,IREC2
       INTEGER LEN1,LEN2
-      REAL(SZ) DTE1,DTE2
+      REAL(8) DTE1,DTE2
       REAL(8) TIMEOUTSE1,TIMEOUTSE2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword...
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword...
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*85  INLINE
       CHARACTER*4 RDES4(8),RID4(6),AID4(6)
@@ -315,9 +334,9 @@ C
       INTEGER NSPOOLV1,NSPOOLV2 
       INTEGER IREC1,IREC2
       INTEGER LEN1,LEN2
-      REAL(SZ) DTV1,DTV2
+      REAL(8) DTV1,DTV2
       REAL(8) TIMEOUTSV1,TIMEOUTSV2
-      REAL(SZ) TOL,ERR
+      REAL(8) TOL,ERR
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*85  INLINE
       CHARACTER*4 RDES4(8),RID4(6),AID4(6)
@@ -607,8 +626,8 @@ C
       INTEGER ITE1,ITE2
       INTEGER IREC1,IREC2
       INTEGER LEN1,LEN2
-      REAL(SZ) DTE1,DTE2
-      REAL(SZ) TOL,ERR
+      REAL(8) DTE1,DTE2
+      REAL(8) TOL,ERR
       REAL(8)  TIMEOUTE1,TIMEOUTE2
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*85  INLINE
@@ -893,9 +912,9 @@ C
       INTEGER NP1,NP2 
       INTEGER IREC1,IREC2
       INTEGER LEN1,LEN2
-      REAL(SZ) DTV1,DTV2
+      REAL(8) DTV1,DTV2
       REAL(8) TIMEOUTV1,TIMEOUTV2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword...
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword...
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*85  INLINE
       CHARACTER*4 RDES4(8),RID4(6),AID4(6)
@@ -1181,8 +1200,8 @@ C
       INTEGER I,J,IPROC,IDUM
       INTEGER NFREQ1,NFREQ2,NUMSTNS
       INTEGER LEN1,LEN2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword...
-      REAL(SZ) MAG1,MAG2,PHAS1,PHAS2
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword...
+      REAL(8) MAG1,MAG2,PHAS1,PHAS2
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*80  INLINE,HEADER1,HEADER2
       LOGICAL FOUND1,FOUND2
@@ -1291,9 +1310,9 @@ C
       INTEGER I,J,IPROC,IDUM
       INTEGER NFREQ1,NFREQ2,NUMSTNS
       INTEGER LEN1,LEN2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword...
-      REAL(SZ) UMAG1,UMAG2,VMAG1,VMAG2
-      REAL(SZ) UPH1,UPH2,VPH1,VPH2
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword...
+      REAL(8) UMAG1,UMAG2,VMAG1,VMAG2
+      REAL(8) UPH1,UPH2,VPH1,VPH2
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*80  INLINE,HEADER1,HEADER2
       LOGICAL FOUND1,FOUND2
@@ -1405,8 +1424,8 @@ C
       INTEGER I,J,IPROC,IDUM
       INTEGER NFREQ1,NFREQ2,NP1,NP2
       INTEGER LEN1,LEN2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword...
-      REAL(SZ) MAG1,MAG2,PHAS1,PHAS2
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword...
+      REAL(8) MAG1,MAG2,PHAS1,PHAS2
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*80  INLINE,HEADER1,HEADER2
       LOGICAL FOUND1,FOUND2
@@ -1515,9 +1534,9 @@ C
       INTEGER I,J,IPROC,IDUM
       INTEGER NFREQ1,NFREQ2,NP1,NP2
       INTEGER LEN1,LEN2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword...
-      REAL(SZ) UMAG1,UMAG2,VMAG1,VMAG2
-      REAL(SZ) UPH1,UPH2,VPH1,VPH2
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword...
+      REAL(8) UMAG1,UMAG2,VMAG1,VMAG2
+      REAL(8) UPH1,UPH2,VPH1,VPH2
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*80  INLINE,HEADER1,HEADER2
       LOGICAL FOUND1,FOUND2
@@ -1625,25 +1644,25 @@ C
       INTEGER I,J,IPROC,IDUM
       INTEGER LEN1,LEN2
       INTEGER NP1,NP2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword
-      REAL(SZ) ELAV1,ELAV2
-      REAL(SZ) EAV1,EAV2
-      REAL(SZ) EAVDIF1,EAVDIF2
-      REAL(SZ) ELVA1,ELVA2
-      REAL(SZ) ESQ1,ESQ2
-      REAL(SZ) EVADIF1,EVADIF2
-      REAL(SZ) XVELAV1,XVELAV2
-      REAL(SZ) UAV1,UAV2
-      REAL(SZ) UAVDIF1,UAVDIF2
-      REAL(SZ) XVELVA1,XVELVA2
-      REAL(SZ) USQ1,USQ2
-      REAL(SZ) UVADIF1,UVADIF2
-      REAL(SZ) YVELAV1,YVELAV2
-      REAL(SZ) VAV1,VAV2
-      REAL(SZ) VAVDIF1,VAVDIF2
-      REAL(SZ) YVELVA1,YVELVA2
-      REAL(SZ) VSQ1,VSQ2
-      REAL(SZ) VVADIF1,VVADIF2
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword
+      REAL(8) ELAV1,ELAV2
+      REAL(8) EAV1,EAV2
+      REAL(8) EAVDIF1,EAVDIF2
+      REAL(8) ELVA1,ELVA2
+      REAL(8) ESQ1,ESQ2
+      REAL(8) EVADIF1,EVADIF2
+      REAL(8) XVELAV1,XVELAV2
+      REAL(8) UAV1,UAV2
+      REAL(8) UAVDIF1,UAVDIF2
+      REAL(8) XVELVA1,XVELVA2
+      REAL(8) USQ1,USQ2
+      REAL(8) UVADIF1,UVADIF2
+      REAL(8) YVELAV1,YVELAV2
+      REAL(8) VAV1,VAV2
+      REAL(8) VAVDIF1,VAVDIF2
+      REAL(8) YVELVA1,YVELVA2
+      REAL(8) VSQ1,VSQ2
+      REAL(8) VVADIF1,VVADIF2
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*114 ELEV1,ELEV2
       CHARACTER*114 UU1,VV1,UU2,VV2
@@ -1775,9 +1794,9 @@ C
       INTEGER NP1,NP2 
       INTEGER IREC1,IREC2
       INTEGER LEN1,LEN2
-      REAL(SZ) DTV1,DTV2
+      REAL(8) DTV1,DTV2
       REAL(8) TIMEOUTV1,TIMEOUTV2
-      REAL(SZ) TOL,ERR !jgf45.07 ERR is a fortran keyword...
+      REAL(8) TOL,ERR !jgf45.07 ERR is a fortran keyword...
       CHARACTER*80  DIR1,DIR2,FNAME1,FNAME2,FNAME3
       CHARACTER*85  INLINE
       CHARACTER*4 RDES4(8),RID4(6),AID4(6)

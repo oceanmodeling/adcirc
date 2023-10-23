@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 #ifdef ADCXDMF
 C----------------------------------------------------------------------
 C                     M O D U L E     X D M F I O
@@ -8,7 +27,6 @@ C     write output module.
 C----------------------------------------------------------------------
       module xdmfio
 C----------------------------------------------------------------------
-      use sizes, only : sz
       logical :: release = .true.  ! .true. to release memory after writing data to HDF5
       logical :: writeToHDF5 = .true. ! .true. if XdmfAddGrid should immediately write mesh
       integer :: lightDataLimit = 10 ! max values to save as light data (xml)
@@ -1151,8 +1169,8 @@ C-----------------------------------------------------------------------
       implicit none
       include 'adcirc_Xdmf.f'
       integer, intent(in) :: nsta
-      real(sz), intent(in) :: stax(:)
-      real(sz), intent(in) :: stay(:)
+      real(8), intent(in) :: stax(:)
+      real(8), intent(in) :: stay(:)
       character(len=80), intent(in) :: stationType
       integer*8, intent(in) :: xdmfFortranObj ! XDMF object to receive data
       integer :: informationID ! information index, used as ID to insert array

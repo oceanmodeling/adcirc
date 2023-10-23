@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C******************************************************************************
 C PADCIRC VERSION 45.12 03/17/2006                                            *
 C  last changes in this file VERSION 45.12                                    *
@@ -54,16 +73,15 @@ C
 #ifdef ADCNETCDF
       use Couple2BC3D, only: Initial_BC3D_NetCDF
 #endif
-
       IMPLICIT NONE
 
       INTEGER I, J,IOS, IJK
       INTEGER NM1, NM2, NM3
       INTEGER NC1, NC2, NC3, NCELE
 
-      REAL(SZ) HTOT
+      REAL(8) HTOT
 !kmd - Evan's updates for rivers above MSL
-!      REAL(SZ),ALLOCATABLE :: et_WSE(:)
+!      REAL(8),ALLOCATABLE :: et_WSE(:)
       LOGICAL FOUND
 
 C     jgf48.4628 Add capability to turn off solution if only met output
@@ -1344,7 +1362,7 @@ ckmd  additional variable for baroclinic boundary conditions
       INTEGER :: NumofBCNodes
       INTEGER :: NOD, J, NumofNodes, K
       INTEGER :: IINDX
-      REAL(SZ), ALLOCATABLE :: TMP(:,:)
+      REAL(8), ALLOCATABLE :: TMP(:,:)
 C
       call setMessageSource("coldstart_3D")
 #if defined(COLDSTART_TRACE) || defined(ALL_TRACE)
@@ -1728,14 +1746,21 @@ C     overwriting the values computed here.
 C----------------------------------------------------------------------
       subroutine setColdWetDryStateAndWaterSurfaceElevation()
       use sizes, only : inputdir
+      use ADCIRC_MOD, only : ADCIRC_Terminate
       use mesh, only : dp, np, mju, ne, nm
       use boundaries, only : nvel, lbcodei, nbv
       use global, only : eta2, nnodecode, noff, logMessage, allMessage,
      &   scratchMessage, INFO, h0, setMessageSource, unsetMessageSource,
-     &   DEBUG, WARNING, INFO, scratchMessage, eta1, nolifa, River_above_MSL,
-     &   EtaDisc
+     &   DEBUG, WARNING, INFO, ERROR, scratchMessage, eta1, nolifa,
+     &   EtaDisc, River_above_MSL
       use nodalattributes, only : loadStartDry, STARTDRY, GeoidOffset, 
-     &   LoadGeoidOffset, OutputTau0, LoadRiver_et_WSE, River_et_WSE !jgf47.06
+     &   LoadGeoidOffset, OutputTau0, LoadRiver_et_WSE, River_et_WSE,
+     &   BFCdlLimit, fric, fgamma, ftheta, manningsn, hbreak,
+     &   loadManningsN, iflinbf, ifnlbf, ifhybf
+!JLW: adding subgrid
+      use subgrid, only: level0, readsubgridlookup,
+     &                   getvertlookup, getelelookup, 
+     &                   subgridwetdry,initVar
       implicit none
       integer :: nm1, nm2, nm3  ! node numbers around the element
       integer :: nc1, nc2, nc3  ! nodecodes around the element
@@ -1747,6 +1772,7 @@ C----------------------------------------------------------------------
       logical, allocatable :: dryReasonInitialized(:)
       logical :: found ! .true. if obsolete init river elevation file was found
       !
+      
       call setMessageSource(
      &   "setColdWetDryStateAndWaterSurfaceElevation")
 #if defined(COLDSTART_TRACE) || defined(ALL_TRACE)
@@ -1795,6 +1821,30 @@ C----------------------------------------------------------------------
             EtaDisc(NBV(I))=Eta2(NBV(I))
          ENDIF
       END DO
+
+!JLW: adding subgrid lookup table read in
+      IF(level0.EQV..true.)THEN
+#ifdef ADCNETCDF          
+!JLW: call subgrid lookup table read in
+         call readSubgridLookup()
+         if(nolifa.eq.2)then
+!JLW: initialize subgrid variables
+            call initVar()
+!JLW: call the vertex lookup subroutine
+            call getVertLookup()
+!JLW: call the elemental lookup subroutine
+            call getEleLookup()
+!JLW: now do wetting and drying check
+            call subgridwetdry(BFCdLLimit, fric, fgamma, ftheta,
+     &                         manningsn, hbreak, loadManningsN,
+     &                         iflinbf, ifnlbf, ifhybf)
+         endif    
+#else
+         call allMessage(ERROR, "Subgrid calculation requires building"
+     &                          //"with netcdf enabled")
+         call ADCIRC_Terminate()
+#endif
+      ELSE
       !
       ! Set all nodes to wet by default.
       nnodecode(:)=1
@@ -1886,6 +1936,8 @@ C----------------------------------------------------------------------
             eta2=h0-dp
          end where
       endif
+!JLW: end subgrid if statement
+      ENDIF
       eta1(:) = eta2(:) 
 
 #if defined(COLDSTART_TRACE) || defined(ALL_TRACE)

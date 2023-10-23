@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------
 !  MODULE OWIWIND
 !-----------------------------------------------------------------------
@@ -67,7 +86,7 @@
       MODULE OWIWIND
 !-----------------------------------------------------------------------
 
-        USE SIZES,ONLY : SZ,MYPROC
+        USE SIZES,ONLY : MYPROC
         USE GLOBAL,ONLY : NSCREEN, ScreenUnit, DEBUG, ECHO, INFO,
      &     WARNING, ERROR, screenMessage, logMessage, allMessage,
      &     setMessageSource, unsetMessageSource, scratchMessage,
@@ -82,7 +101,7 @@
         integer  :: numBlankSnaps !< Number of blank snaps to prepend to Oceanweather files
         integer  :: numSkipSnaps !< Number of snaps to skip in Oceanweather files
         integer  :: cntSnaps !< Counter for number of snaps that have been processed so far
-        real(SZ) :: windMultiplier !< Wind multiplier applied to Oceanweather wind velicities
+        real(8) :: windMultiplier !< Wind multiplier applied to Oceanweather wind velicities
         logical  :: moving_grid = .false. !< indicates the owi domains use a moving grid (for aswip.F)
         
         TYPE OCEANWEATHER !< Container for Oceanweather domains. Represents a wind and pressure field
@@ -98,18 +117,18 @@
             INTEGER              :: iounit_wind !< fortran unit number for wind file
             INTEGER              :: iSnap !< current snap number 
             INTEGER              :: iUpdate !< flag to update interpolation weights and indicies if wind field moves
-            REAL(SZ)             :: dLat !< spacing in latitude direction
-            REAL(SZ)             :: dLon !< spacing in longitude direction
-            REAL(SZ)             :: swLon !< southwest longitude
-            REAL(SZ)             :: swLat !< southwest latitude
-            REAL(SZ)             :: adcircStartTime !< start time of adcirc simulation
-            REAL(SZ)             :: windTimeElapsed !< time that has elapsed in the wind fields
+            REAL(8)             :: dLat !< spacing in latitude direction
+            REAL(8)             :: dLon !< spacing in longitude direction
+            REAL(8)             :: swLon !< southwest longitude
+            REAL(8)             :: swLat !< southwest latitude
+            REAL(8)             :: adcircStartTime !< start time of adcirc simulation
+            REAL(8)             :: windTimeElapsed !< time that has elapsed in the wind fields
             LOGICAL              :: hasData !< set to false when fields are no longer have data
             LOGICAL              :: atEnd !< set to false when the fields are at the end of file
-            REAL(SZ),ALLOCATABLE :: p(:,:) !< pressure field
-            REAL(SZ),ALLOCATABLE :: u(:,:) !< u-velocity field
-            REAL(SZ),ALLOCATABLE :: v(:,:) !< v-velocity field
-            REAL(SZ),ALLOCATABLE :: weight(:,:) !< bilinear interpolation weights
+            REAL(8),ALLOCATABLE :: p(:,:) !< pressure field
+            REAL(8),ALLOCATABLE :: u(:,:) !< u-velocity field
+            REAL(8),ALLOCATABLE :: v(:,:) !< v-velocity field
+            REAL(8),ALLOCATABLE :: weight(:,:) !< bilinear interpolation weights
             INTEGER,ALLOCATABLE  :: interpPoints(:,:) !< indicies for interpolation
         END TYPE OCEANWEATHER
 
@@ -147,12 +166,12 @@
 !-----------------------------------------------------------------------
       SUBROUTINE NWS12INIT(WVNX,WVNY,PRN,NP,PRdeflt)
 !-----------------------------------------------------------------------
-        USE SIZES, ONLY : SZ,MYPROC, GBLINPUTDIR
+        USE SIZES, ONLY : MYPROC, GBLINPUTDIR
         IMPLICIT NONE
-        REAL(SZ), intent(out) :: WVNX(:),WVNY(:),PRN(:)
+        REAL(8), intent(out) :: WVNX(:),WVNY(:),PRN(:)
         INTEGER,intent(in)    :: NP
         INTEGER               :: I
-        REAL(SZ)              :: PRdeflt
+        REAL(8)              :: PRdeflt
         character(len=1024)   :: tmpstr
         character(len=1024)   :: errorVar = ""
         character(len=1024)   :: fname,f1,f2
@@ -260,14 +279,14 @@
         USE CONSTANTS, ONLY: RHOWAT0, G
         IMPLICIT NONE
         INTEGER,intent(in)     :: NP
-        REAL(SZ),intent(out)   :: WVNX(:),WVNY(:),PRN(:)
-        REAL(SZ),intent(in)    :: PRdeflt
-        REAL(SZ)               :: RHOWATG,EyePressure
+        REAL(8),intent(out)   :: WVNX(:),WVNY(:),PRN(:)
+        REAL(8),intent(in)    :: PRdeflt
+        REAL(8)               :: RHOWATG,EyePressure
         INTEGER                :: I,J,S,XI,YI
         CHARACTER(1024)        :: filename,errorVar
         INTEGER                :: iounit
-        REAL(SZ)               :: uu,vv,pp
-        REAL(SZ)               :: w1,w2,w3,w4
+        REAL(8)               :: uu,vv,pp
+        REAL(8)               :: w1,w2,w3,w4
         INTEGER                :: errorIO
         LOGICAL                :: uvpHasBeenSet
         LOGICAL,intent(out),optional :: HasData(:)
@@ -380,16 +399,16 @@
         use CONSTANTS,only:PRBCKGRND
         implicit none
         intrinsic               :: minloc
-        real(sz), intent(inout) :: eyeLat(3)
-        real(sz), intent(inout) :: eyeLon(3)
+        real(8), intent(inout) :: eyeLat(3)
+        real(8), intent(inout) :: eyeLon(3)
         logical, intent(out)    :: foundEye
         integer                 :: EyeLatI
         integer                 :: EyeLonI
         integer                 :: EyeDomainI
-        real(SZ)                :: EyeLatTemp
-        real(SZ)                :: EyeLonTemp
-        real(SZ)                :: EyePressure
-        real(SZ)                :: minp
+        real(8)                :: EyeLatTemp
+        real(8)                :: EyeLonTemp
+        real(8)                :: EyePressure
+        real(8)                :: minp
         integer                 :: s
         integer                 :: minidx(2)
 
@@ -471,7 +490,7 @@
         implicit none
         integer,intent(in)  :: idx
         integer,intent(in)  :: np
-        real(sz),intent(in) :: prbk 
+        real(8),intent(in) :: prbk 
         character(1024)     :: filename
         character(1024)     :: errorVar
         integer             :: i,j
@@ -479,8 +498,8 @@
         integer             :: iLatw,iLongw,iLatp,iLongp
         integer(8)          :: iCYMDHw,iCYMDHp
         integer             :: iMinw,iMinp
-        real(SZ)            :: dxw,dyw,swlatw,swlongw
-        real(SZ)            :: dxp,dyp,swlatp,swlongp
+        real(8)            :: dxw,dyw,swlatw,swlongw
+        real(8)            :: dxp,dyp,swlatp,swlongp
         
         call setMessageSource("owi_readNextSnap")
 #if defined(OWIWIND_TRACE) || defined(ALL_TRACE)
@@ -636,7 +655,7 @@
 !-----------------------------------------------------------------------
         implicit none
         CHARACTER(*),INTENT(IN)          :: filename
-        REAL(SZ),INTENT(IN)              :: prbk
+        REAL(8),INTENT(IN)              :: prbk
         TYPE(OCEANWEATHER),INTENT(INOUT) :: obj
 
         call setMessageSource("owi_setEndOfFileBlankSnap")
@@ -681,13 +700,13 @@
 !-----------------------------------------------------------------------
         implicit none
         integer,intent(in)   :: node
-        real(sz),intent(out) :: u,v,p
+        real(8),intent(out) :: u,v,p
         logical,intent(out)  :: isSet
         integer              :: i,j,xi,yi
-        real(sz)             :: ui(4)
-        real(sz)             :: vi(4)
-        real(sz)             :: pi(4)
-        real(sz),parameter   :: flag = -999.0
+        real(8)             :: ui(4)
+        real(8)             :: vi(4)
+        real(8)             :: pi(4)
+        real(8),parameter   :: flag = -999.0
 
         call setMessageSource("owi_interpolateToMesh")
 #if defined(OWIWIND_TRACE) || defined(ALL_TRACE)
@@ -802,8 +821,8 @@
 !-----------------------------------------------------------------------
             IMPLICIT NONE
             TYPE(OCEANWEATHER),INTENT(IN)      :: this
-            REAL(SZ),ALLOCATABLE,INTENT(OUT)   :: lat(:)
-            REAL(SZ),ALLOCATABLE,INTENT(OUT)   :: lon(:)
+            REAL(8),ALLOCATABLE,INTENT(OUT)   :: lat(:)
+            REAL(8),ALLOCATABLE,INTENT(OUT)   :: lon(:)
             INTEGER                            :: I
       
             call setMessageSource("owi_generateCoordinates")
@@ -918,8 +937,8 @@
 !-----------------------------------------------------------------------
              implicit none
              integer,intent(in)     :: numSnaps,np
-             real(sz),intent(inout) :: wx(:),wy(:),pr(:)
-             real(sz),intent(in)    :: prbk
+             real(8),intent(inout) :: wx(:),wy(:),pr(:)
+             real(8),intent(in)    :: prbk
              integer                :: i
             call setMessageSource("owi_skipSnaps")
 #if defined(OWIWIND_TRACE) || defined(ALL_TRACE)
@@ -1078,9 +1097,9 @@
       INTEGER,INTENT(IN)   :: idx
       INTEGER,INTENT(IN)   :: NP
       INTEGER              :: I,J,K,XI,YI
-      REAL(SZ)             :: adcLat,adcLong
-      REAL(SZ)             :: w,w1,w2,w3,w4
-      REAL(SZ),ALLOCATABLE :: lat(:), lon(:)
+      REAL(8)             :: adcLat,adcLong
+      REAL(8)             :: w,w1,w2,w3,w4
+      REAL(8),ALLOCATABLE :: lat(:), lon(:)
 
       call setMessageSource("nws12interp")
 #if defined(OWIWIND_TRACE) || defined(ALL_TRACE)

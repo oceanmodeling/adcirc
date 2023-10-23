@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C******************************************************************************
 C MODULE WEIR_BOUNDARY
 C   Written by Zachary Cobell, 2012/03/12
@@ -13,12 +32,11 @@ C
             USE PRE_GLOBAL,ONLY: NVELL,IBCONNR,LBCODE,NBOU,MNVEL,NBVV,X,
      &                           Y,NVEL,NPROC,NNODG 
             USE KDTREE2_MODULE
-            USE PRESIZES,ONLY : SZ
             USE GLOBAL,ONLY: SCREENUNIT
 
             IMPLICIT NONE
             
-            REAL(SZ),ALLOCATABLE       :: BAR_LOCATIONS(:,:)
+            REAL(8),ALLOCATABLE       :: BAR_LOCATIONS(:,:)
             INTEGER,ALLOCATABLE        :: LNBV(:)
             INTEGER,ALLOCATABLE        :: LIBCONN(:)
             INTEGER,ALLOCATABLE        :: LBCODEI(:)
@@ -40,7 +58,7 @@ C
                 INTEGER :: K
                 INTEGER :: NWEIR
                 INTEGER :: IDX,IDX2,IDX3
-                REAL(SZ),ALLOCATABLE :: XY(:,:)
+                REAL(8),ALLOCATABLE :: XY(:,:)
 
                 ALLOCATE(XY(1:2,1:NNODG))
                 ALLOCATE(NWEIRBNDRY(NPROC))
@@ -56,10 +74,10 @@ C
             
             SUBROUTINE FIND_BOUNDARY_NODES(LAT,LON,IDX)
                 IMPLICIT NONE
-                REAL(SZ),INTENT(IN)  :: LAT
-                REAL(SZ),INTENT(IN)  :: LON
-                REAL(SZ)             :: EPS
-                REAL(SZ)             :: X,Y
+                REAL(8),INTENT(IN)  :: LAT
+                REAL(8),INTENT(IN)  :: LON
+                REAL(8)             :: EPS
+                REAL(8)             :: X,Y
                 INTEGER,INTENT(OUT)  :: IDX
                 INTEGER,PARAMETER    :: SEARCHDEPTH = 1
                 TYPE(KDTREE2_RESULT) :: KDRESULTS(SEARCHDEPTH)
@@ -91,10 +109,10 @@ C
                 CHARACTER(2000)         :: InputString
                 CHARACTER(2000)         :: modifiedString
                 CHARACTER(200)          :: ScheduleFile
-                REAL(SZ) :: X1,X2,Y1,Y2
-                REAL(SZ) :: ETA_MAX,TimeStartDay,TimeStartSec
-                REAL(SZ) :: TimeStartHour,TimeEndDay,TimeEndHour
-                REAL(SZ) :: TimeEndSec,ZF
+                REAL(8) :: X1,X2,Y1,Y2
+                REAL(8) :: ETA_MAX,TimeStartDay,TimeStartSec
+                REAL(8) :: TimeStartHour,TimeEndDay,TimeEndHour
+                REAL(8) :: TimeEndSec,ZF
                 INTEGER  :: VARYTYPE
                 INTEGER  :: IDX
                 INTEGER  :: IOS
@@ -153,8 +171,8 @@ C...............WRITE NAMELIST INPUT TO SCRATCH FILE
 
             LOGICAL FUNCTION ISNULL(CHECKNUMBER)
                 IMPLICIT NONE
-                REAL(SZ),INTENT(IN) :: CHECKNUMBER
-                REAL(SZ)            :: EPS
+                REAL(8),INTENT(IN) :: CHECKNUMBER
+                REAL(8)            :: EPS
                 EPS = EPSILON(1.0D0)
                 ISNULL = .FALSE.
                 IF(ABS(CHECKNUMBER+99999D0).LE.EPS)THEN

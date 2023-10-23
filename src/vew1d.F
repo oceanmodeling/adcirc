@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C*******************************************************************
 C
 C  MODULE VEW1D
@@ -18,7 +37,6 @@ C*******************************************************************
      &           (NM1,NM2,NM3,IA1,IA2,IB1,IB2,
      &            CAX,CAY,CBX,CBY,SX,SY,STATUS)
       !-------------------------------------------------------------
-      USE SIZES,ONLY : SZ
       USE MESH,ONLY : X,Y,findIBTYPEAtNode
       USE NodalAttributes,ONLY : NCondensedNodes,CondensedNodes
 
@@ -26,10 +44,10 @@ C*******************************************************************
 
       INTEGER,INTENT(IN) :: NM1,NM2,NM3
       INTEGER,INTENT(OUT) :: IA1,IA2,IB1,IB2
-      REAL(SZ),INTENT(OUT) :: CAX,CAY,CBX,CBY,SX,SY
+      REAL(8),INTENT(OUT) :: CAX,CAY,CBX,CBY,SX,SY
       INTEGER,INTENT(OUT) :: STATUS
       INTEGER :: IBTYPE_A1,IBTYPE_A2,IBTYPE_B1
-      REAL(SZ) :: LEN
+      REAL(8) :: LEN
       LOGICAL :: ON_BOUNDARY
 
       STATUS = 0
@@ -112,17 +130,16 @@ C*******************************************************************
       !-------------------------------------------------------------
       SUBROUTINE ROTATE_AT_CONDENSEDNODES(VECX,VECY,IND,SX,SY)
       !-------------------------------------------------------------
-      USE SIZES,ONLY : SZ
       USE GLOBAL,ONLY : NODECODE
       USE NodalAttributes,ONLY : LoadCondensedNodes,NCondensedNodes
       USE Mesh,ONLY : LBArray_Pointer
       USE BOUNDARIES,ONLY : LBCODEI,NBV,IBCONN,ISSUBMERGED64
       IMPLICIT NONE
 
-      REAL(SZ),INTENT(INOUT) :: VECX, VECY
-      REAL(SZ),INTENT(IN) :: SX,SY
+      REAL(8),INTENT(INOUT) :: VECX, VECY
+      REAL(8),INTENT(IN) :: SX,SY
       INTEGER,INTENT(IN) :: IND
-      REAL(SZ) :: CS,SI,CSCS,CSSI,SISI,fBUF1,fBUF2,VLEN,P
+      REAL(8) :: CS,SI,CSCS,CSSI,SISI,fBUF1,fBUF2,VLEN,P
       INTEGER :: IBND,NNBB1,NNBB2
       LOGICAL :: DO_ROTATE
       
@@ -164,7 +181,6 @@ C*******************************************************************
       !-------------------------------------------------------------
       SUBROUTINE ROTATEBACK_AT_CONDENSEDNODES(VECX,VECY,IND)
       !-------------------------------------------------------------
-      USE SIZES,ONLY : SZ
       USE GLOBAL,ONLY : NODECODE
       USE NodalAttributes,ONLY : LoadCondensedNodes,NCondensedNodes
       USE Mesh,ONLY : LBArray_Pointer
@@ -172,9 +188,9 @@ C*******************************************************************
      &                      ISSUBMERGED64
       IMPLICIT NONE
 
-      REAL(SZ),INTENT(INOUT) :: VECX, VECY
+      REAL(8),INTENT(INOUT) :: VECX, VECY
       INTEGER,INTENT(IN) :: IND
-      REAL(SZ) CS,SI,CSCS,CSSI,SISI,fBUF1,fBUF2,VLEN,P
+      REAL(8) CS,SI,CSCS,CSSI,SISI,fBUF1,fBUF2,VLEN,P
       INTEGER :: IBND,NNBB1,NNBB2
       LOGICAL :: DO_ROTATE
       
@@ -217,15 +233,14 @@ C
      &            QX1N1,QY1N1,QX1N2,QY1N2,QX1N3,QY1N3,
      &            STATUS)
       !-------------------------------------------------------------
-      USE SIZES,ONLY : SZ
       IMPLICIT NONE
 
       INTEGER,INTENT(IN) :: NM1,NM2,NM3
-      REAL(SZ),INTENT(INOUT) :: 
+      REAL(8),INTENT(INOUT) :: 
      &     U1N1,V1N1,U1N2,V1N2,U1N3,V1N3,
      &     QX1N1,QY1N1,QX1N2,QY1N2,QX1N3,QY1N3
       INTEGER,INTENT(OUT) :: STATUS
-      REAL(SZ) :: CAX,CAY,CBX,CBY,SX,SY
+      REAL(8) :: CAX,CAY,CBX,CBY,SX,SY
       INTEGER :: IA1,IA2,IB1,IB2
 
       CALL GET_STREAMDIRECTION_AT_ELEMENT
@@ -252,15 +267,14 @@ C
      &            TEMP_LV_A2,TEMP_LV_B2,TEMP_LV_A3,TEMP_LV_B3,
      &            STATUS)
       !-------------------------------------------------------------
-      USE SIZES,ONLY : SZ
       IMPLICIT NONE
 
       INTEGER,INTENT(IN) :: NM1,NM2,NM3
-      REAL(SZ),INTENT(INOUT) :: 
+      REAL(8),INTENT(INOUT) :: 
      &     TEMP_LV_A1,TEMP_LV_B1,TEMP_LV_A2,TEMP_LV_B2,
      &     TEMP_LV_A3,TEMP_LV_B3
       INTEGER,INTENT(OUT) :: STATUS
-      REAL(SZ) :: CAX,CAY,CBX,CBY,SX,SY
+      REAL(8) :: CAX,CAY,CBX,CBY,SX,SY
       INTEGER :: IA1,IA2,IB1,IB2
 
       CALL GET_STREAMDIRECTION_AT_ELEMENT
@@ -280,7 +294,6 @@ C
       SUBROUTINE REMOVE_NORMAL_AT_CONDENSEDNODES
      &           (VECX,VECY,IND,STATUS)
       !-------------------------------------------------------------
-      USE SIZES,ONLY : SZ
       USE GLOBAL,ONLY : NODECODE
       USE NodalAttributes,ONLY : LoadCondensedNodes,NCondensedNodes
       USE Mesh,ONLY : LBArray_Pointer
@@ -289,10 +302,10 @@ C
       
       IMPLICIT NONE
 
-      REAL(SZ),INTENT(INOUT) :: VECX, VECY
+      REAL(8),INTENT(INOUT) :: VECX, VECY
       INTEGER,INTENT(IN) :: IND
       INTEGER,INTENT(OUT) :: STATUS
-      REAL(SZ) CS,SI,CSCS,CSSI,SISI,fBUF1,fBUF2,LEN
+      REAL(8) CS,SI,CSCS,CSSI,SISI,fBUF1,fBUF2,LEN
       INTEGER :: IBND,NNBB1,NNBB2
       LOGICAL :: DO_ROTATE
       

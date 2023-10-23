@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C******************************************************************************
 C (P)ADCIRC VERSION 45.12 03/17/2006                                          *
 C  last changes in this file VERSION 45.12                                    *
@@ -92,7 +111,7 @@ C******************************************************************************
       !USE, INTRINSIC :: IEEE_ARITHMETIC !jgfdebug ieee_is_nan()
       USE VERSION, ONLY : adc_version, fileFmtMajor, fileFmtMinor, 
      &   FileFmtRev
-      USE SIZES, ONLY : sz, rootDir, mnproc, mnwproc, mnallproc, myproc,
+      USE SIZES, ONLY : rootDir, mnproc, mnwproc, mnallproc, myproc,
      &   read_local_hot_start_files, make_dirname, write_local_harm_files,
      &   get_numwriters, mnstae
       USE GLOBAL, ONLY : usingDynamicWaterLevelCorrection,
@@ -125,9 +144,9 @@ C******************************************************************************
 C
       INTEGER, OPTIONAL :: COMM
       CHARACTER(*), OPTIONAL :: ROOTD
-      REAL(SZ) :: StaTimHS
-      REAL(SZ) :: RefTimHS
-      REAL(SZ) :: TimeLoc
+      REAL(8) :: StaTimHS
+      REAL(8) :: RefTimHS
+      REAL(8) :: TimeLoc
       INTEGER :: iargc    ! function to return the number of command line arguments
       INTEGER :: argcount ! number of command line arguments
       CHARACTER(2048) :: cmdlinearg ! a single command line argument

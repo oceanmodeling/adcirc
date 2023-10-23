@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C----------------------------------------------------------------------------
 C
 C                           MODULE READ_GLOBAL
@@ -464,7 +483,6 @@ C---------------------------------------------------------------------
       USE HARM, ONLY : NHAINC, ALLOC_HA, NAMEFR, HAFREQ, HAFF, HAFACE,
      &                 THAS, THAF, FMV, NHASE, NHASV, NHAGE, NHAGV,
      &                 IHARIND, ALLOC_MAIN14, CHARMV
-      USE PRESIZES, ONLY : SZ
       USE PREP_WEIR
       USE NODALATTRIBUTES, ONLY : outputTau0
       use memory_usage
@@ -481,7 +499,7 @@ C    ===================================================================
 
 
       integer(8) :: nbytes = 0
-      REAL(SZ) RSTIMINC
+      REAL(8) RSTIMINC
       INTEGER N1, N2, N3, KMIN, JG, INDX
       INTEGER I,J,K,M
       INTEGER IG1,IG2,IG3,IL1,IL2,IL3
@@ -515,6 +533,9 @@ C.... DMW 202207 Add options for controlling slope/wind limiting and
 C.... "new" formula for computing vel in wetting/drying routine 
      &          slim, windlim, directvelWD, useHF
 C.... DMW
+!JLW: adding subgrid control namelist
+      integer :: ios_subgrid
+      namelist /subgridControl/ subgridFilename, level0, level1
       ! jgf52.08.02 : For inundation output files.
       namelist /inundationOutputControl/ inundationOutput, inunThresh
 
@@ -651,6 +672,18 @@ Casey 180318: Added NWS=13
       endif
       rewind(15)  !Return to the top of the fort.15 file
 
+!JLW: adding subgrid control namelist
+      READ(UNIT = 15, NML = subgridControl,IOSTAT = ios_subgrid)
+      if ( ios_subgrid.ge.0) then
+         foundSubgridControlNamelist = .true.
+         call logMessage(INFO,
+     &         'The subgridControl namelist was found.')
+      else
+         call logMessage(INFO,
+     &         'The subgridControl namelist was not found.')
+      endif
+      rewind(15)  !Return to the top of the fort.15 file
+
       read(unit=15,nml=inundationOutputControl,iostat=ios)
       if ( ios.ge.0) then
          foundInundationOutputControlNamelist = .true.
@@ -752,6 +785,7 @@ c..
      &         'The density control namelist was not found.')
       endif
       rewind(15)  !Return to the top of the fort.15 file
+
 
       READ(15,80) RUNDES
 C
@@ -1949,7 +1983,7 @@ C---------------------------------------------------------------------
       INTEGER I,J,K,M,N                                        ! loop counters
       CHARACTER(50) LVAR(3)
       REAL(8) :: STATIME
-      REAL(sz) :: HH1 ! domain averaged depth
+      REAL(8) :: HH1 ! domain averaged depth
       INTEGER :: NH   ! horizontal node counter
 C
 C     jgf49.43.19: Moved memory allocation for number of 3D stations
@@ -2444,7 +2478,7 @@ C----------------------------------------------------------------------
       TYPE(KDTREE2_RESULT), ALLOCATABLE :: KDRESULTS(:)
       LOGICAL ElementFound  ! .true. when a corresponding element is found
       INTEGER ClosestElement  ! element with closest match
-      REAL(sz), PARAMETER :: Tolerance = 1.0d-5     ! area difference for match
+      REAL(8), PARAMETER :: Tolerance = 1.0d-5     ! area difference for match
 
       ElementFound = .false.
 

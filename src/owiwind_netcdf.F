@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------
 !  MODULE OWIWIND_NETCDF
 !-----------------------------------------------------------------------
@@ -155,7 +174,6 @@
 !-----------------------------------------------------------------------
       MODULE OWIWIND_NETCDF
 !-----------------------------------------------------------------------
-      USE SIZES, ONLY: SZ
       USE GLOBAL,ONLY : DEBUG, allMessage, setMessageSource, unsetMessageSource
 
       CHARACTER(LEN=15)  :: NWS13ColdStartString = "99999999.999999"
@@ -174,15 +192,15 @@
       INTEGER :: NC_IDG
       INTEGER :: NC_VAR
 
-      REAL(SZ) :: NWS13WindMultiplierReal
+      REAL(8) :: NWS13WindMultiplierReal
 
       TYPE NWS13Type
         INTEGER :: InclSnap
         INTEGER :: NextSnap
         INTEGER :: NumSnap
         INTEGER :: PrevSnap
-        REAL(SZ) :: NextTime
-        REAL(SZ) :: PrevTime
+        REAL(8) :: NextTime
+        REAL(8) :: PrevTime
       ENDTYPE
       TYPE(NWS13Type),ALLOCATABLE :: NWS13(:)
 
@@ -200,17 +218,17 @@
       USE SIZES, ONLY: MYPROC
       USE MESH, ONLY: NP
 
-      REAL(SZ),INTENT(IN) :: TimeLoc
-      REAL(SZ),INTENT(INOUT),ALLOCATABLE :: W(:,:)
+      REAL(8),INTENT(IN) :: TimeLoc
+      REAL(8),INTENT(INOUT),ALLOCATABLE :: W(:,:)
 
       CHARACTER(LEN=3100) :: GroupOrder
       CHARACTER(LEN=100) :: TimeUnits
 
-      REAL(SZ),ALLOCATABLE :: Lat(:,:)
-      REAL(SZ),ALLOCATABLE :: Lon(:,:)
+      REAL(8),ALLOCATABLE :: Lat(:,:)
+      REAL(8),ALLOCATABLE :: Lon(:,:)
 
-      REAL(SZ) :: ColdStartDateTimeInJulianDays
-      REAL(SZ) :: WindRefDateTimeInJulianDays
+      REAL(8) :: ColdStartDateTimeInJulianDays
+      REAL(8) :: WindRefDateTimeInJulianDays
 
       INTEGER :: ILat(NP)
       INTEGER :: ILon(NP)
@@ -398,15 +416,15 @@
 
       IMPLICIT NONE
 
-      REAL(SZ),INTENT(INOUT) :: EyeLatR(3)
-      REAL(SZ),INTENT(INOUT) :: EyeLonR(3)
+      REAL(8),INTENT(INOUT) :: EyeLatR(3)
+      REAL(8),INTENT(INOUT) :: EyeLonR(3)
       LOGICAL ,INTENT(OUT)   :: FoundEye
-      REAL(SZ),INTENT(OUT)   :: PRN2(NP)
-      REAL(SZ),INTENT(IN)    :: TimeLoc
-      REAL(SZ),INTENT(INOUT)   :: WVNX2(NP)
-      REAL(SZ),INTENT(INOUT)   :: WVNY2(NP)
-      REAL(SZ),INTENT(INOUT) :: WTIME2
-      REAL(SZ),INTENT(IN) :: W(NP,6)
+      REAL(8),INTENT(OUT)   :: PRN2(NP)
+      REAL(8),INTENT(IN)    :: TimeLoc
+      REAL(8),INTENT(INOUT)   :: WVNX2(NP)
+      REAL(8),INTENT(INOUT)   :: WVNY2(NP)
+      REAL(8),INTENT(INOUT) :: WTIME2
+      REAL(8),INTENT(IN) :: W(NP,6)
 
       CHARACTER(LEN=200) :: JunkC
       CHARACTER(LEN=200) :: Line
@@ -426,44 +444,44 @@
       INTEGER :: NumLon
       INTEGER :: TempI(1)
 
-      REAL(SZ),ALLOCATABLE :: Lat(:,:)
-      REAL(SZ),ALLOCATABLE :: Lon(:,:)
-      REAL(SZ),ALLOCATABLE :: P(:,:)
-      REAL(SZ),ALLOCATABLE :: U(:,:)
-      REAL(SZ),ALLOCATABLE :: V(:,:)
-      REAL(SZ),ALLOCATABLE :: Ws(:,:)
+      REAL(8),ALLOCATABLE :: Lat(:,:)
+      REAL(8),ALLOCATABLE :: Lon(:,:)
+      REAL(8),ALLOCATABLE :: P(:,:)
+      REAL(8),ALLOCATABLE :: U(:,:)
+      REAL(8),ALLOCATABLE :: V(:,:)
+      REAL(8),ALLOCATABLE :: Ws(:,:)
 
-      REAL(SZ),ALLOCATABLE :: NextLat(:,:)
-      REAL(SZ),ALLOCATABLE :: NextLon(:,:)
-      REAL(SZ),ALLOCATABLE :: NextP(:,:)
-      REAL(SZ),ALLOCATABLE :: NextU(:,:)
-      REAL(SZ),ALLOCATABLE :: NextV(:,:)
-      REAL(SZ),ALLOCATABLE :: NextWs(:,:)
+      REAL(8),ALLOCATABLE :: NextLat(:,:)
+      REAL(8),ALLOCATABLE :: NextLon(:,:)
+      REAL(8),ALLOCATABLE :: NextP(:,:)
+      REAL(8),ALLOCATABLE :: NextU(:,:)
+      REAL(8),ALLOCATABLE :: NextV(:,:)
+      REAL(8),ALLOCATABLE :: NextWs(:,:)
 
-      REAL(SZ),ALLOCATABLE :: PrevLat(:,:)
-      REAL(SZ),ALLOCATABLE :: PrevLon(:,:)
-      REAL(SZ),ALLOCATABLE :: PrevP(:,:)
-      REAL(SZ),ALLOCATABLE :: PrevU(:,:)
-      REAL(SZ),ALLOCATABLE :: PrevV(:,:)
-      REAL(SZ),ALLOCATABLE :: PrevWs(:,:)
+      REAL(8),ALLOCATABLE :: PrevLat(:,:)
+      REAL(8),ALLOCATABLE :: PrevLon(:,:)
+      REAL(8),ALLOCATABLE :: PrevP(:,:)
+      REAL(8),ALLOCATABLE :: PrevU(:,:)
+      REAL(8),ALLOCATABLE :: PrevV(:,:)
+      REAL(8),ALLOCATABLE :: PrevWs(:,:)
 
-      REAL(SZ) :: CLat(1)
-      REAL(SZ) :: CLon(1)
-      REAL(SZ) :: NextCLat(1)
-      REAL(SZ) :: NextCLon(1)
-      REAL(SZ) :: PP(NP)
-      REAL(SZ) :: PrevCLat(1)
-      REAL(SZ) :: PrevCLon(1)
-      REAL(SZ) :: TimeInterpFactor
-      REAL(SZ) :: TimeTemp
-      REAL(SZ) :: UU(NP)
-      REAL(SZ) :: VV(NP)
-      REAL(SZ) :: Wind(NP)
-      REAL(SZ) :: sWdir
-      REAL(SZ) :: W2(NP,4)
-      REAL(SZ) :: var_scale_attr
-      REAL(SZ) :: var_offset_attr
-      REAL(SZ) :: D_QNAN, ZERO
+      REAL(8) :: CLat(1)
+      REAL(8) :: CLon(1)
+      REAL(8) :: NextCLat(1)
+      REAL(8) :: NextCLon(1)
+      REAL(8) :: PP(NP)
+      REAL(8) :: PrevCLat(1)
+      REAL(8) :: PrevCLon(1)
+      REAL(8) :: TimeInterpFactor
+      REAL(8) :: TimeTemp
+      REAL(8) :: UU(NP)
+      REAL(8) :: VV(NP)
+      REAL(8) :: Wind(NP)
+      REAL(8) :: sWdir
+      REAL(8) :: W2(NP,4)
+      REAL(8) :: var_scale_attr
+      REAL(8) :: var_offset_attr
+      REAL(8) :: D_QNAN, ZERO
 
       call setMessageSource("nws13get")
 #if defined(OWIWIND_TRACE) || defined(ALL_TRACE)
@@ -831,8 +849,8 @@
                 sWdir = 0.
               ELSE
                 sWdir = ATAN2(UU(iV),VV(iV))
-                UU(IV) = -Wind(IV)*SIN(sWDir)
-                VV(IV) = -Wind(IV)*COS(sWDir)
+                UU(IV) = Wind(IV)*SIN(sWDir)
+                VV(IV) = Wind(IV)*COS(sWDir)
               ENDIF
               ! Casey 200528
               PRN2(IV) = PP(IV)
@@ -917,9 +935,9 @@
       INTEGER,INTENT(IN)  :: NumLat
       INTEGER,INTENT(IN)  :: NumLon
 
-      REAL(SZ),INTENT(IN)  :: Lon(NumLon,NumLat)
-      REAL(SZ),INTENT(IN)  :: Lat(NumLon,NumLat)
-      REAL(SZ),INTENT(INOUT) :: W(NP,4)
+      REAL(8),INTENT(IN)  :: Lon(NumLon,NumLat)
+      REAL(8),INTENT(IN)  :: Lat(NumLon,NumLat)
+      REAL(8),INTENT(INOUT) :: W(NP,4)
 
       INTEGER :: Counter
       INTEGER :: ElemNumber
@@ -931,18 +949,18 @@
 
       LOGICAL :: ElemFound
 
-      REAL(SZ),ALLOCATABLE :: ElemCenter(:,:)
-      REAL(SZ) :: AdcLat
-      REAL(SZ) :: AdcLon
-      REAL(SZ) :: MaxLat
-      REAL(SZ) :: MaxLon
-      REAL(SZ) :: MinLat
-      REAL(SZ) :: MinLon
-      REAL(SZ) :: W0
-      REAL(SZ) :: W1
-      REAL(SZ) :: W2
-      REAL(SZ) :: W3
-      REAL(SZ) :: W4
+      REAL(8),ALLOCATABLE :: ElemCenter(:,:)
+      REAL(8) :: AdcLat
+      REAL(8) :: AdcLon
+      REAL(8) :: MaxLat
+      REAL(8) :: MaxLon
+      REAL(8) :: MinLat
+      REAL(8) :: MinLon
+      REAL(8) :: W0
+      REAL(8) :: W1
+      REAL(8) :: W2
+      REAL(8) :: W3
+      REAL(8) :: W4
 
       TYPE(KDTREE2),POINTER :: kdTree
       TYPE(KDTREE2_RESULT),ALLOCATABLE :: kdResult(:)
@@ -1095,7 +1113,7 @@
 
 
 
-      REAL(SZ) FUNCTION FRACTIONTIME(HOUR,MINUTE,SECOND)
+      REAL(8) FUNCTION FRACTIONTIME(HOUR,MINUTE,SECOND)
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: HOUR,MINUTE,SECOND
       call setMessageSource("fractiontime")

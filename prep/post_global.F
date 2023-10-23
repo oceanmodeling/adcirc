@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C     jgf Updated for 45.07 to add handling of fort.71, fort.72, fort.73
 C         and the NOFF array in output files 
 C     jgf Updated for 45.06 09/07/2005 b/c of changes in hot start file format
@@ -5,14 +24,6 @@ C     jgf Updated for 45.11 02/02/2006 b/c for 3D recording stations
 C     jgf Updated for 45.12 03/17/2006 
       MODULE POST_GLOBAL
       IMPLICIT NONE
-C...SET NUMBER OF BYTES "SZ" IN REAL(SZ) DECLARATIONS       
-
-#ifdef REAL4
-      INTEGER, PARAMETER :: SZ = 4
-#endif
-#ifdef REAL8
-      INTEGER, PARAMETER :: SZ = 8
-#endif
 
       INTEGER MNPROC,MNP,MNE,MNPP,MNSTAE,MNSTAV,MNHARF,MNWLAT,MNWLON
       INTEGER MNSTAC !jgf46.02 # of conc. rec. sta. in full domain
@@ -48,27 +59,27 @@ C  PARM15-3DVS section
       INTEGER :: I3DSD,NSPO3DSD,NSTA3DD
       INTEGER :: I3DSV,NSPO3DSV,NSTA3DV
       INTEGER :: I3DST,NSPO3DST,NSTA3DT
-      REAL(SZ) :: TO3DSDS,TO3DSDF
-      REAL(SZ) :: TO3DSVS,TO3DSVF
-      REAL(SZ) :: TO3DSTS,TO3DSTF
+      REAL(8) :: TO3DSDS,TO3DSDF
+      REAL(8) :: TO3DSVS,TO3DSVF
+      REAL(8) :: TO3DSTS,TO3DSTF
       INTEGER :: I3DGD,NSPO3DGD
       INTEGER :: I3DGV,NSPO3DGV
       INTEGER :: I3DGT,NSPO3DGT
-      REAL(SZ) :: TO3DGDS,TO3DGDF
-      REAL(SZ) :: TO3DGVS,TO3DGVF
-      REAL(SZ) :: TO3DGTS,TO3DGTF
+      REAL(8) :: TO3DGDS,TO3DGDF
+      REAL(8) :: TO3DGVS,TO3DGVF
+      REAL(8) :: TO3DGTS,TO3DGTF
 C
 C  ELESTAT section
-      REAL(SZ) TOUTSE,TOUTFE,TOUTSGE,TOUTFGE
+      REAL(8) TOUTSE,TOUTFE,TOUTSGE,TOUTFGE
 C
 C  VELSTAT section
-      REAL(SZ) TOUTSGV,TOUTFGV,TOUTSV,TOUTFV
+      REAL(8) TOUTSGV,TOUTFGV,TOUTSV,TOUTFV
 C
 C  CONSTAT  section
-      REAL(SZ) TOUTSC,TOUTFC,TOUTSGC,TOUTFGC
-      REAL(SZ) TOUTSGW,TOUTFGW
+      REAL(8) TOUTSC,TOUTFC,TOUTSGC,TOUTFGC
+      REAL(8) TOUTSGW,TOUTFGW
 C  Meteorological recording station section
-      REAL(SZ) TOUTFM, TOUTSM
+      REAL(8) TOUTFM, TOUTSM
 
 C
 C--Degress-to-Radians and Radians-to-Degrees

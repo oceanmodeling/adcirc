@@ -18,7 +18,7 @@ module adc_mod
   use GLOBAL , only: IMAP_EL_LG,NODES_LG
   use GLOBAL , only: ETA2, UU2, VV2  ! Export water level and velocity fileds to wave model
   USE GLOBAL,  ONLY: RSNX2, RSNY2    ! Import wave 2D forces from wave model
-  use SIZES  , only: ROOTDIR, SZ
+  use SIZES  , only: ROOTDIR
 
   ! DW
   USE GLOBAL, only: CMP_VERSION_NUMBERS, FileFmtVersion
@@ -306,8 +306,8 @@ module adc_mod
         INTEGER:: nn(2)
         INTEGER, ALLOCATABLE:: etov(:,:)  ! element table
         INTEGER, ALLOCATABLE:: etog(:,:)  ! element table, global
-        REAL (SZ), ALLOCATABLE:: vx(:,:), bxy(:) ! node coordinates, bathymetry
-        REAL (SZ), ALLOCATABLE:: xc(:,:)  ! element coordinates 
+        REAL(8), ALLOCATABLE:: vx(:,:), bxy(:) ! node coordinates, bathymetry
+        REAL(8), ALLOCATABLE:: xc(:,:)  ! element coordinates 
         character(len=1024)   :: msgString
 
 
@@ -960,7 +960,7 @@ module adc_mod
         INTEGER :: nn(:)
         integer :: n1, n2, n3
 
-        REAL (SZ), allocatable :: vx(:, :), bxy(:) ! node, bathymetry
+        REAL(8), allocatable :: vx(:, :), bxy(:) ! node, bathymetry
         INTEGER, allocatable :: etov(:, :) ! element connectity table, local
         INTEGER, allocatable :: etog(:, :) ! element connectity table, global
         INTEGER, allocatable, optional :: nodeLabel(:)

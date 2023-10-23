@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C******************************************************************************
 C PADCIRC VERSION 45.12 03/17/2006                                            *
 C  last changes in this file VERSION 45.07                                    *
@@ -85,8 +104,7 @@ C     Addition for netCDF by MCF 5/18/08 modified by jgf49.28
       IMPLICIT NONE
       interface
          SUBROUTINE binaryRead2D(array, length, lun, counter)
-         USE SIZES, ONLY : SZ
-         REAL(SZ), intent(out) :: array(length) ! the data to read from the hotstart file
+         REAL(8), intent(out) :: array(length) ! the data to read from the hotstart file
          INTEGER, intent(in) :: length  ! the number of values to read
          INTEGER, intent(in) :: lun     ! fortran logical unit number to read from
          INTEGER, intent(inout) :: counter ! i/o position in the file
@@ -97,29 +115,29 @@ C     Addition for netCDF by MCF 5/18/08 modified by jgf49.28
       INTEGER NCyc, NA, InputFileFmtVn
       INTEGER sd_node_number,fd_node_number
       INTEGER :: NNBB, NNBB1, NNBB2
-      REAL(SZ) :: RFF1, RFF2
+      REAL(8) :: RFF1, RFF2
 
 C   kmd48.33bc - add variable for timestep change
       INTEGER NTHS
-      REAL(SZ) ArgT, ArgTP, ArgSAlt
-      REAL(SZ) H2
-      REAL(SZ) CCSFEA
-      REAL(SZ) QTRatio
-      REAL(SZ) SAltMul, S2SFEA
-      REAL(SZ) TPMul
-      REAL(SZ) WTRatio, WindX, WindY, WindMag, WDragCo
+      REAL(8) ArgT, ArgTP, ArgSAlt
+      REAL(8) H2
+      REAL(8) CCSFEA
+      REAL(8) QTRatio
+      REAL(8) SAltMul, S2SFEA
+      REAL(8) TPMul
+      REAL(8) WTRatio, WindX, WindY, WindMag, WDragCo
       REAL(8) TimeLoc
-      REAL(SZ) ETRATIO
-      REAL(SZ) PRDIFF,PRBCKGRND_MH2O     ! tcm v49.16 20100617 added
-      REAL(SZ) ARG1, ARG2, ARGJ1, ARGJ2  ! tides
+      REAL(8) ETRATIO
+      REAL(8) PRDIFF,PRBCKGRND_MH2O     ! tcm v49.16 20100617 added
+      REAL(8) ARG1, ARG2, ARGJ1, ARGJ2  ! tides
 C     jgf46.08 Fine grained ramp functions
-      REAL(SZ) RampExtFlux1   ! Ramp for external flux b.c.s @ITHS-1
-      REAL(SZ) RampExtFlux2   ! Ramp for external flux b.c.s @ITHS
-      REAL(SZ) RampIntFlux1   ! Ramp for internal flux b.c.s @ITHS-1
-      REAL(SZ) RampIntFlux2   ! Ramp for internal flux b.c.s @ITHS
-      REAL(SZ) RampTip2    ! Ramp for tidal potential @ITHS
-      real(sz) rampMete2   ! Ramp for wind and atmospheric pressure @ITHS     
-      REAL(SZ) RampWRad2   ! Ramp for wave radiation stress @ITHS
+      REAL(8) RampExtFlux1   ! Ramp for external flux b.c.s @ITHS-1
+      REAL(8) RampExtFlux2   ! Ramp for external flux b.c.s @ITHS
+      REAL(8) RampIntFlux1   ! Ramp for internal flux b.c.s @ITHS-1
+      REAL(8) RampIntFlux2   ! Ramp for internal flux b.c.s @ITHS
+      REAL(8) RampTip2    ! Ramp for tidal potential @ITHS
+      real(8) rampMete2   ! Ramp for wind and atmospheric pressure @ITHS     
+      REAL(8) RampWRad2   ! Ramp for wave radiation stress @ITHS
 C     jgf46.14 Check for file existence before attempting to open.
       LOGICAL fileFound    ! .True. if the the file exists
       INTEGER ErrorIO      ! zero if file opened successfully
@@ -142,12 +160,12 @@ C     if they are available
 C
 C     kmd48.33bc - add variables for heat flux
       INTEGER :: NOD
-      REAL(SZ),ALLOCATABLE :: TMP(:,:)
-      REAL(SZ) :: CD, CDQ, QWIND
+      REAL(8),ALLOCATABLE :: TMP(:,:)
+      REAL(8) :: CD, CDQ, QWIND
       CHARACTER(80) :: CDUM80
-      REAL(SZ) :: RNDAYHS
-      REAL(SZ),ALLOCATABLE :: RealQ_Tmp(:,:)
-      REAL(SZ),ALLOCATABLE :: ImQ_Tmp(:,:)
+      REAL(8) :: RNDAYHS
+      REAL(8),ALLOCATABLE :: RealQ_Tmp(:,:)
+      REAL(8),ALLOCATABLE :: ImQ_Tmp(:,:)
       INTEGER :: IDenHS
       REAL(8) :: dtChange ! difference in time step size (sec) between 
                           ! current run and the one we're hotstarting from
@@ -160,14 +178,14 @@ C     in parallel.
       INTEGER fulldomainElement ! fulldomain element number from hotstart file
 C
 C     tcm v49.64.01 -- ADDED variables for Ice concentration fields
-      REAL(SZ) PIC,CICE_TRatio  !ICE VARIABLES
+      REAL(8) PIC,CICE_TRatio  !ICE VARIABLES
 C
 C     tcm v50.66.01 added variables for time varying bathymetry
-      real(sz) DPTMP,BTRatio
+      real(8) DPTMP,BTRatio
       integer IJK
 C
 C     jgf49.1001 Added for blending NWS19 and NWS12 (from NAM) met data
-      REAL(SZ) bf ! blending factor for the two wind data types
+      REAL(8) bf ! blending factor for the two wind data types
 
 C     kmd -- Added variables for initial conditions
       CHARACTER(80) :: gridinfo
@@ -2862,19 +2880,19 @@ C   kmd48.33bc - variable information needed from the global.F file
       IMPLICIT NONE
       INTEGER :: IRType                  !number of fields in output file
       INTEGER :: NH, N                   !horizontal & vertical loop counters
-!      REAL(SZ) :: RealPartOfQ
+!      REAL(8) :: RealPartOfQ
 C  kmd48.33bc - new variables
       INTEGER :: NumofBCNodes, J, NOD, IT
       INTEGER, INTENT(IN) :: ITHS
-      REAL(SZ), INTENT(IN) :: TimeLoc
+      REAL(8), INTENT(IN) :: TimeLoc
 
       CHARACTER(80) :: CDUM80
 
       INTEGER :: IINDX
       INTEGER :: NumofNodes, K
-      REAL(SZ),ALLOCATABLE :: TMP(:,:)
+      REAL(8),ALLOCATABLE :: TMP(:,:)
 
-      REAL(SZ) :: tempp, temp1, temp2
+      REAL(8) :: tempp, temp1, temp2
 
       call setMessageSource("hotstart_3D")
 #if defined(HOTSTART_TRACE) || defined(ALL_TRACE)
@@ -3481,7 +3499,7 @@ C----------------------------------------------------------------------
 C--------------------------------------------------------------------
 C     S U B R O U T I N E      B I N A R Y   R E A D   2 D
 C--------------------------------------------------------------------
-C     jgf49.44: Reads a real(sz) array with the specified length
+C     jgf49.44: Reads a real(8) array with the specified length
 C     from a binary hotstart file; takes the file counter as an
 C     input argument and returns the new value of the file counter
 C     at the end of the read. Its called "2D" even though it reads
@@ -3489,12 +3507,11 @@ C     a 1D fortran array because the array represents a 2D physical
 C     quantity in an unstructured mesh.
 C--------------------------------------------------------------------
       SUBROUTINE binaryRead2D(array, length, lun, counter)
-      USE SIZES, ONLY : SZ
       USE GLOBAL, ONLY : setMessageSource, unsetMessageSource, 
      &                    allMessage, DEBUG
       IMPLICIT NONE
       INTEGER, intent(in) :: length
-      REAL(SZ), intent(out) :: array(length) ! the data to read from the hotstart file
+      REAL(8), intent(out) :: array(length) ! the data to read from the hotstart file
       INTEGER, intent(in) :: lun     ! fortran logical unit number to read from
       INTEGER, intent(inout) :: counter ! i/o position in the file
 C
@@ -3520,17 +3537,16 @@ C--------------------------------------------------------------------
 C--------------------------------------------------------------------
 C     S U B R O U T I N E      R E A L   R E A D   2 D
 C--------------------------------------------------------------------
-C     kmd: Reads a real(sz) array with the specified length
+C     kmd: Reads a real(8) array with the specified length
 C     from an initial condition file in ascii format; it has the
 C     same format as the binary version but does not require the
 C     file counter.
 C--------------------------------------------------------------------
       SUBROUTINE realRead2D(array, length, lun )
-      USE SIZES, ONLY : SZ
       USE GLOBAL, ONLY : setMessageSource, unsetMessageSource, 
      &                    allMessage, DEBUG
       IMPLICIT NONE
-      REAL(SZ), intent(out), dimension(length) :: array ! the data to read from the hotstart file
+      REAL(8), intent(out), dimension(length) :: array ! the data to read from the hotstart file
       INTEGER, intent(in) :: length  ! the number of values to read
       INTEGER, intent(in) :: lun     ! fortran logical unit number to read from
 C
@@ -3558,7 +3574,6 @@ C--------------------------------------------------------------------
 C     jgf49.44: Same as binaryRead2D except it reads an integer.
 C--------------------------------------------------------------------
       SUBROUTINE binaryIntRead2D(array, length, lun, counter)
-      USE SIZES, ONLY : SZ
       USE GLOBAL, ONLY : setMessageSource, unsetMessageSource, 
      &                    allMessage, DEBUG
       IMPLICIT NONE
@@ -3593,7 +3608,6 @@ C--------------------------------------------------------------------
 C     kmd: Same as realRead2D except it reads an integer.
 C--------------------------------------------------------------------
       SUBROUTINE realIntRead2D(array, length, lun)
-      USE SIZES, ONLY : SZ
       USE GLOBAL, ONLY : setMessageSource, unsetMessageSource, 
      &                    allMessage, DEBUG
       IMPLICIT NONE
@@ -3628,11 +3642,10 @@ C     kmd: Same as realRead2D except it reads data with
 C     both horizontal and vertical lengths.
 C--------------------------------------------------------------------
       SUBROUTINE realRead3D(array, iLength, jLength, lun)
-      USE SIZES, ONLY : SZ
       USE GLOBAL, ONLY : setMessageSource, unsetMessageSource, 
      &                    allMessage, DEBUG
       IMPLICIT NONE
-      REAL(SZ), intent(out), dimension(ilength,jlength) :: array ! data to read from the hotstart file
+      REAL(8), intent(out), dimension(ilength,jlength) :: array ! data to read from the hotstart file
       INTEGER, intent(in) :: iLength  ! the number of horiz values to read
       INTEGER, intent(in) :: jLength  ! the number of layers
       INTEGER, intent(in) :: lun     ! fortran logical unit number to read from
@@ -3666,20 +3679,20 @@ C     to a subdomain array.
 C     kmd: Updated to include a real format option
 C-----------------------------------------------------------------------
       subroutine readAndMapToSubdomain2D(sd_array, lun, counter, method)
-      USE SIZES, ONLY : SZ, MNPROC, READ_LOCAL_HOT_START_FILES
+      USE SIZES, ONLY : MNPROC, READ_LOCAL_HOT_START_FILES
       USE GLOBAL, ONLY : ERROR, setMessageSource, allMessage,
      &                    unsetMessageSource, DEBUG, NP_G, NODES_LG
       USE MESH, ONLY : NP
       IMPLICIT NONE
 C
-      REAL(SZ), intent(out), dimension(np) :: sd_array ! subdomain array
+      REAL(8), intent(out), dimension(np) :: sd_array ! subdomain array
       INTEGER, intent(in) :: lun     ! fortran logical unit number to read from
       INTEGER, intent(inout) :: counter ! i/o position in the file
       INTEGER, intent(in) :: method  ! logical to determine binary or real
       INTEGER :: sd_node_number
       INTEGER :: fd_node_number
 C
-      REAL(SZ), allocatable, dimension(:) :: fd_array ! full domain array
+      REAL(8), allocatable, dimension(:) :: fd_array ! full domain array
 C
       call setMessageSource("readAndMapToSubdomain2D")
 #if defined(GLOBAL_TRACE) || defined(ALL_TRACE)
@@ -3746,7 +3759,7 @@ C     to a subdomain array.
 C     kmd: Updated to include real format option
 C-----------------------------------------------------------------------
       subroutine readAndMapToSubdomainInt2D(sd_array, lun, counter, method)
-      USE SIZES, ONLY : SZ, MNPROC, READ_LOCAL_HOT_START_FILES
+      USE SIZES, ONLY : MNPROC, READ_LOCAL_HOT_START_FILES
       USE GLOBAL, ONLY : setMessageSource, unsetMessageSource, 
      &                    allMessage, DEBUG, NP_G, NODES_LG
       USE MESH, ONLY : NP
@@ -3909,14 +3922,14 @@ C     to a subdomain array.
 C     kmd : Updated to include a real format option
 C-----------------------------------------------------------------------
       subroutine readAndMapToSubdomain3D(sd_array, nfen, lun, counter,method)
-      USE SIZES, ONLY : SZ, MNPROC, READ_LOCAL_HOT_START_FILES
+      USE SIZES, ONLY : MNPROC, READ_LOCAL_HOT_START_FILES
       USE GLOBAL, ONLY : setMessageSource, unsetMessageSource, 
      &                    allMessage, DEBUG, NP_G, NODES_LG
       USE MESH, ONLY : NP
       USE HARM, ONLY : binaryRead3D
       IMPLICIT NONE
 C
-      REAL(SZ), intent(out), dimension(np,nfen) :: sd_array ! subdomain array
+      REAL(8), intent(out), dimension(np,nfen) :: sd_array ! subdomain array
       INTEGER, intent(in) :: nfen    ! number of vertical layers
       INTEGER, intent(in) :: lun     ! fortran logical unit number to read from
       INTEGER, intent(inout) :: counter ! i/o position in the file
@@ -3924,7 +3937,7 @@ C
       INTEGER :: sd_node_number
       INTEGER :: fd_node_number
 C
-      REAL(SZ), allocatable, dimension(:,:) :: fd_array ! full domain array
+      REAL(8), allocatable, dimension(:,:) :: fd_array ! full domain array
 C
       call setMessageSource("readAndMapToSubdomain3D")
 #if defined(HOTSTART_TRACE) || defined(ALL_TRACE)

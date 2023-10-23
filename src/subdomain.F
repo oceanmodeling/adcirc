@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C
 C                      ADCIRC - SUBDOMAIN MODELING MODULE
 C       
@@ -15,7 +34,7 @@ C    |                                                                      |
 C    ========================================================================
 
       module subdomain
-      use sizes, only : sz, globaldir
+      use sizes, only : globaldir
       use global, only : DEBUG, ECHO, INFO, WARNING, ERROR, logMessage,
      &                    allMessage, scratchMessage, setMessageSource,
      &                    unsetMessageSource 
@@ -26,12 +45,12 @@ C    ========================================================================
       integer,allocatable :: cbnr(:), obnr(:), ibnr(:)
       integer,allocatable :: localcbnr(:), localobnr(:), localibnr(:) 
       integer :: sbtiminc, nobn, nibn, ncbn
-      real(sz),allocatable :: eobn1(:),uobn1(:),vobn1(:),eibn1(:) 
-      real(sz),allocatable :: eobn2(:),uobn2(:),vobn2(:),eibn2(:)
-      real(sz),allocatable :: ecbn1(:),ucbn1(:),vcbn1(:)
-      real(sz),allocatable :: ecbn2(:),ucbn2(:),vcbn2(:)
-      real(sz),allocatable :: setEob(:), setUob(:), setEcb(:), setUcb(:)
-      real(sz),allocatable :: setVob(:), setVcb(:), setEib(:)
+      real(8),allocatable :: eobn1(:),uobn1(:),vobn1(:),eibn1(:) 
+      real(8),allocatable :: eobn2(:),uobn2(:),vobn2(:),eibn2(:)
+      real(8),allocatable :: ecbn1(:),ucbn1(:),vcbn1(:)
+      real(8),allocatable :: ecbn2(:),ucbn2(:),vcbn2(:)
+      real(8),allocatable :: setEob(:), setUob(:), setEcb(:), setUcb(:)
+      real(8),allocatable :: setVob(:), setVcb(:), setEib(:)
       integer,allocatable :: setWDob(:), setWDcb(:)
       integer,allocatable :: wdobn1(:),wdobn2(:),wdcbn1(:),wdcbn2(:)
       integer,allocatable :: cbn(:),obn(:),ibn(:)  

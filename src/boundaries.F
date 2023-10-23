@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C     ------------------------------------------------------------------
 C     ------------------------------------------------------------------
 C                  M O D U L E   B O U N D A R I E S 
@@ -13,11 +32,10 @@ C     ------------------------------------------------------------------
 C     ------------------------------------------------------------------
       module boundaries
 C     ------------------------------------------------------------------
-      use sizes, only : sz
       implicit none
-      REAL(SZ),ALLOCATABLE ::   BNDLEN2O3(:)
-      REAL(SZ),ALLOCATABLE ::   CSII(:),SIII(:)
-      REAL(SZ),ALLOCATABLE ::   CSIICN(:),SIIICN(:) ! normal direction at condensed nodes 09/22/2022 SB
+      REAL(8),ALLOCATABLE ::   BNDLEN2O3(:)
+      REAL(8),ALLOCATABLE ::   CSII(:),SIII(:)
+      REAL(8),ALLOCATABLE ::   CSIICN(:),SIIICN(:) ! normal direction at condensed nodes 09/22/2022 SB
       INTEGER,ALLOCATABLE ::    ME2GW(:)
       INTEGER,ALLOCATABLE ::    NBV(:),LBCODEI(:)
  
@@ -29,18 +47,18 @@ C     ------------------------------------------------------------------
       INTEGER,ALLOCATABLE ::    IBTYPEE(:) !jgf49.32 added ibtypee
       integer, allocatable :: ibtype_orig(:)
       INTEGER,ALLOCATABLE ::    NEleZNG(:)
-      REAL(SZ),ALLOCATABLE ::   ZNGIF1(:),ZNGIF2(:),ZNGIF3(:)
+      REAL(8),ALLOCATABLE ::   ZNGIF1(:),ZNGIF2(:),ZNGIF3(:)
 C.....for internal barrier boundaries with flowthrough pipes
-      REAL(SZ),ALLOCATABLE ::   BARLANHT(:),BARLANCFSP(:)
-      REAL(SZ),ALLOCATABLE ::   BARINHT(:),BARINCFSB(:),BARINCFSP(:)
-      REAL(SZ),ALLOCATABLE ::   PIPEHT(:),PIPECOEF(:),PIPEDIAM(:)
+      REAL(8),ALLOCATABLE ::   BARLANHT(:),BARLANCFSP(:)
+      REAL(8),ALLOCATABLE ::   BARINHT(:),BARINCFSB(:),BARINCFSP(:)
+      REAL(8),ALLOCATABLE ::   PIPEHT(:),PIPECOEF(:),PIPEDIAM(:)
       INTEGER, ALLOCATABLE ::   IBCONN(:)
       INTEGER, ALLOCATABLE ::   ISSUBMERGED64(:) ! used to identify submerged ibtype=64 weir  SB
       ! these arrays will only be needed temporarily, between reading 
       ! the ascii mesh file and initializing the boundaries
-      REAL(SZ),ALLOCATABLE ::   BARLANHTR(:,:),BARLANCFSPR(:,:)
-      REAL(SZ),ALLOCATABLE ::   BARINHTR(:,:),BARINCFSBR(:,:),BARINCFSPR(:,:)
-      REAL(SZ),ALLOCATABLE ::   PIPEHTR(:,:),PIPECOEFR(:,:),PIPEDIAMR(:,:)
+      REAL(8),ALLOCATABLE ::   BARLANHTR(:,:),BARLANCFSPR(:,:)
+      REAL(8),ALLOCATABLE ::   BARINHTR(:,:),BARINCFSBR(:,:),BARINCFSPR(:,:)
+      REAL(8),ALLOCATABLE ::   PIPEHTR(:,:),PIPECOEFR(:,:),PIPEDIAMR(:,:)
       INTEGER, ALLOCATABLE ::  IBCONNR(:,:)
       !      
       INTEGER  NOPE
@@ -61,12 +79,12 @@ C.....for internal barrier boundaries with flowthrough pipes
       INTEGER  NFLUXIBP,NPIPE
       integer  nfluxb,nfluxf,nfluxib,nfluxrbc,nfluxgbc
       integer  nfluxib64, nfluxib64_gbl !sb flag to indicate that ibtype=64 (vertical element wall) boundary exists
-      real(sz) :: costset
-      real(sz) :: anginn
+      real(8) :: costset
+      real(8) :: anginn
 
   
-      REAL(SZ),ALLOCATABLE ::   BTRAN3(:),BTRAN4(:),BTRAN5(:)
-      REAL(SZ),ALLOCATABLE ::   BTRAN6(:),BTRAN7(:),BTRAN8(:)
+      REAL(8),ALLOCATABLE ::   BTRAN3(:),BTRAN4(:),BTRAN5(:)
+      REAL(8),ALLOCATABLE ::   BTRAN6(:),BTRAN7(:),BTRAN8(:)
       INTEGER, ALLOCATABLE ::   NTRAN1(:),NTRAN2(:)
 
 !     &       LBARRAY_POINTER,              !LBARRAY_POINTER(MNP) = pointer into array of land or flux boundary
@@ -531,9 +549,9 @@ C     ------------------------------------------------------------------
       integer, intent(out) :: p_ibtype(:)
       integer, intent(out) :: lbcode(:)
       integer, intent(out) :: p_ibconnr(:,:)
-      real(sz), intent(out) :: bar1(:,:)
-      real(sz), intent(out) :: bar2(:,:)
-      real(sz), intent(out) :: bar3(:,:)
+      real(8), intent(out) :: bar1(:,:)
+      real(8), intent(out) :: bar2(:,:)
+      real(8), intent(out) :: bar3(:,:)
       integer, intent(out) :: weir(:)
       integer, intent(out) :: weird(:)
       integer, allocatable, intent(out) :: flux14_ary(:)

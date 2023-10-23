@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 #ifdef ADCNETCDF
       !=================================================================
       !=================================================================
@@ -39,7 +58,7 @@
       !                                            files. Added in fort.51-54.nc
       !=================================================================
       MODULE NETCDFIO
-      USE SIZES, ONLY : SZ, OFF, ASCII, BINARY, SPARSE_ASCII, NETCDF3,
+      USE SIZES, ONLY : OFF, ASCII, BINARY, SPARSE_ASCII, NETCDF3,
      &   NETCDF4, XDMF
       USE GLOBAL, ONLY : DEBUG, ECHO, INFO, WARNING, ERROR,
      &   screenMessage, logMessage, allMessage, setMessageSource,
@@ -113,8 +132,8 @@ C
          INTEGER :: nbdvnc_dims(2)
          INTEGER :: nbvvnc_dims(2)
          INTEGER :: mesh_dims(1)       ! Mesh Definition (Corbitt)
-         REAL(SZ), ALLOCATABLE :: xnc(:) ! x coordinate or longitude
-         REAL(SZ), ALLOCATABLE :: ync(:) ! y coordinate or latitude
+         REAL(8), ALLOCATABLE :: xnc(:) ! x coordinate or longitude
+         REAL(8), ALLOCATABLE :: ync(:) ! y coordinate or latitude
          !WJP 02.20.2018: changed to one dimensional boundary
          INTEGER, ALLOCATABLE ::  nbvvnc(:) ! boundary array
          INTEGER, ALLOCATABLE ::  nbdvnc(:) ! boundary array
@@ -166,8 +185,8 @@ C
          INTEGER :: y_id          ! station y-coordinate or latitude
          INTEGER :: x_dims(1)
          INTEGER :: y_dims(1)
-         REAL(SZ), ALLOCATABLE :: x(:) ! x coordinate or longitude
-         REAL(SZ), ALLOCATABLE :: y(:) ! y coordinate or latitude
+         REAL(8), ALLOCATABLE :: x(:) ! x coordinate or longitude
+         REAL(8), ALLOCATABLE :: y(:) ! y coordinate or latitude
          INTEGER :: station_data_id
          INTEGER :: u_station_data_id
          INTEGER :: v_station_data_id
@@ -206,7 +225,7 @@ C
 C
       TYPE, PRIVATE :: nodalData
          INTEGER ncid              ! the id of its netcdf file
-         REAL(SZ) :: initial_value ! array will be initialized to this
+         REAL(8) :: initial_value ! array will be initialized to this
          INTEGER :: nodal_data_id
          !WJP 02.20.2018: added fort.53-54 harmonic outputs
          INTEGER :: ha_nodal_data_id
@@ -1195,7 +1214,7 @@ C
                select case(abs(nws))
                   case(1,2)
                     iret = nf90_put_att(sta%ncid, sta%u_station_data_id,
-     &                      'long_name', 'station e/w wind stress')
+     &                      'long_name', 'station wind stress u-component')
                     CALL check_err(iret)
                     iret = nf90_put_att(sta%ncid, sta%u_station_data_id,
      &                     'standard_name',
@@ -1204,7 +1223,7 @@ C
                     iret = nf90_put_att(sta%ncid, sta%u_station_data_id,
      &                     'positive', 'east')
                     iret = nf90_put_att(sta%ncid, sta%v_station_data_id,
-     &                     'long_name', 'station n/s wind stress')
+     &                     'long_name', 'station wind stress v-component')
                     CALL check_err(iret)
                     iret = nf90_put_att(sta%ncid, sta%v_station_data_id,
      &                    'standard_name',
@@ -1215,7 +1234,7 @@ C
                     CALL check_err(iret)
                   case default
                     iret = nf90_put_att(sta%ncid, sta%u_station_data_id,
-     &                     'long_name', 'station e/w wind velocity')
+     &                     'long_name', 'station wind speed at 10m u-component')
                     CALL check_err(iret)
                     iret = nf90_put_att(sta%ncid, sta%u_station_data_id,
      &                     'standard_name',
@@ -1225,7 +1244,7 @@ C
      &                     'positive', 'east')
                     iret = nf90_put_att(sta%ncid, sta%v_station_data_id,
      &                     'long_name',
-     &                     'station n/s wind velocity')
+     &                     'station wind speed at 10m v-component')
                     CALL check_err(iret)
                     iret = nf90_put_att(sta%ncid, sta%v_station_data_id,
      &                     'standard_name', 'station_northward_wind')
@@ -1505,7 +1524,7 @@ C
       INTEGER n    ! node counter
       INTEGER iret ! success or failure of netcdf call
       integer :: nodalLunsHA(2) = (/ 53, 54 /)
-      REAL(SZ),ALLOCATABLE :: defaultValue(:)
+      REAL(8),ALLOCATABLE :: defaultValue(:)
       CHARACTER(len=1024) :: att_text  ! metadata
 C
       call setMessageSource("initNodalDataFile")
@@ -2404,7 +2423,7 @@ C
                   case(1,2)
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
      &                      'long_name',
-     &                       'e/w wind stress')
+     &                       'wind stress u-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
      &                      'standard_name',
@@ -2415,7 +2434,7 @@ C
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
      &                       'long_name',
-     &                       'n/s wind stress')
+     &                       'wind stress v-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
      &                      'standard_name',
@@ -2426,7 +2445,7 @@ C
                      CALL check_err(iret)
                   case default
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
-     &               'long_name', 'e/w wind velocity')
+     &               'long_name', 'wind speed at 10m u-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
      &                      'standard_name', 'eastward_wind')
@@ -2435,7 +2454,7 @@ C
      &                     'positive', 'east')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
-     &                     'long_name', 'n/s wind velocity')
+     &                     'long_name', 'wind speed at 10m v-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
      &                       'standard_name', 'northward_wind')
@@ -3073,7 +3092,7 @@ C
                   case(1,2)
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
      &                      'long_name',
-     &                       'e/w wind stress')
+     &                       'wind stress u-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
      &                      'standard_name',
@@ -3084,7 +3103,7 @@ C
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
      &                       'long_name',
-     &                       'n/s wind stress')
+     &                       'wind stress v-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
      &                      'standard_name',
@@ -3095,7 +3114,7 @@ C
                      CALL check_err(iret)
                   case default
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
-     &               'long_name', 'e/w wind velocity')
+     &               'long_name', 'wind speed at 10m u-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%u_nodal_data_id,
      &                      'standard_name', 'eastward_wind')
@@ -3104,7 +3123,7 @@ C
      &                     'positive', 'east')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
-     &                     'long_name', 'n/s wind velocity')
+     &                     'long_name', 'wind speed at 10m v-component')
                      CALL check_err(iret)
                      iret = nf90_put_att(dat%ncid, dat%v_nodal_data_id,
      &                       'standard_name', 'northward_wind')
@@ -4697,7 +4716,7 @@ C
       INTEGER iret ! success or failure of the netcdf call
       INTEGER num_values ! number of values in the array
       INTEGER,ALLOCATABLE  :: tempIntArray(:)
-      REAL(SZ),ALLOCATABLE :: tempArray(:)
+      REAL(8),ALLOCATABLE :: tempArray(:)
 C
       call setMessageSource("writeNodalData")
 #if defined(NETCDF_TRACE) || defined(ALL_TRACE)
@@ -5452,7 +5471,7 @@ C     U V E L
       CALL check_err(iret)
       if (ics.ne.1) then
          iret = nf90_put_att(hs%ncid, hs%vel%u_nodal_data_id,
-     &          'long_name', 'vertically averaged e/w velocity')
+     &          'long_name', 'vertically averaged water velocity u-component')
          CALL check_err(iret)
          iret = nf90_put_att(hs%ncid, hs%vel%u_nodal_data_id,
      &          'positive', 'east')
@@ -5483,13 +5502,13 @@ C     V V E L
       CALL check_err(iret)
       if (ics.ne.1) then
          iret = nf90_put_att(hs%ncid, hs%vel%v_nodal_data_id,
-     &           'long_name', 'vertically averaged n/s velocity')
+     &           'long_name', 'vertically averaged water velocity v-component')
          CALL check_err(iret)
          iret = nf90_put_att(hs%ncid, hs%vel%v_nodal_data_id,
      &           'positive', 'north')
       else
          iret = nf90_put_att(hs%ncid, hs%vel%v_nodal_data_id,
-     &       'long_name','vertically averaged velocity in y-direction')
+     &       'long_name','vertically averaged water velocity in y-direction')
          CALL check_err(iret)
          iret = nf90_put_att(hs%ncid, hs%vel%v_nodal_data_id,
      &  'positive', '90 degrees counterclockwise from x water velocity')
@@ -8269,7 +8288,7 @@ C-----------------------------------------------------------------------
       logical :: ldmy(1)
       character(len=1024) :: vn    ! min/max variable name in netcdf file
       character(len=1025) :: tvn   ! time of min/max occurrence variable name in netcdf
-      real(sz),allocatable :: tmp0(:),tmp1(:)
+      real(8),allocatable :: tmp0(:),tmp1(:)
 
       call setMessageSource("readAndMapToSubdomainMaxMinNetCDF")
 #if defined(NETCDF_TRACE) || defined(ALL_TRACE)
@@ -8641,10 +8660,10 @@ C-----------------------------------------------------------------------
       INTEGER, INTENT(in) :: ncid ! file id to pull data from
       INTEGER, INTENT(in) :: fd_array_size ! highest index in fulldomain array
       INTEGER, INTENT(in) :: data_id ! netcdf variable id in file
-      REAL(sz), OPTIONAL, INTENT(out) :: subdomain_reals(:) ! we need
+      REAL(8), OPTIONAL, INTENT(out) :: subdomain_reals(:) ! we need
       INTEGER, OPTIONAL, INTENT(out) :: subdomain_ints(:)  ! we need
 C
-      REAL(sz), ALLOCATABLE :: work_reals(:) ! holds fulldomain data
+      REAL(8), ALLOCATABLE :: work_reals(:) ! holds fulldomain data
       INTEGER, ALLOCATABLE :: work_ints(:)   ! holds fulldomain data
       INTEGER iret ! success or failure of the netcdf call
 C
@@ -8693,9 +8712,9 @@ C-----------------------------------------------------------------------
       INTEGER, INTENT(in) :: m    ! non-nodal dimension
       INTEGER, INTENT(in) :: n    ! number of horizontal nodes
       INTEGER, INTENT(in) :: data_id ! netcdf variable id in file
-      REAL(sz), OPTIONAL, INTENT(out) :: subdomain_reals(:,:) ! we need
+      REAL(8), OPTIONAL, INTENT(out) :: subdomain_reals(:,:) ! we need
 C
-      REAL(sz), ALLOCATABLE :: work_reals(:,:) ! holds fulldomain data
+      REAL(8), ALLOCATABLE :: work_reals(:,:) ! holds fulldomain data
       INTEGER iret ! success or failure of the netcdf call
       INTEGER i    ! loop counter
 C
@@ -8736,9 +8755,9 @@ C-----------------------------------------------------------------------
       INTEGER, INTENT(in) :: m    ! non-nodal dimension
       INTEGER, INTENT(in) :: n    ! number of horizontal nodes
       INTEGER, INTENT(in) :: data_id ! netcdf variable id in file
-      REAL(sz), OPTIONAL, INTENT(out) :: subdomain_reals(:,:) ! we need
+      REAL(8), OPTIONAL, INTENT(out) :: subdomain_reals(:,:) ! we need
 C
-      REAL(sz), ALLOCATABLE :: work_reals(:,:) ! holds fulldomain data
+      REAL(8), ALLOCATABLE :: work_reals(:,:) ! holds fulldomain data
       INTEGER iret ! success or failure of the netcdf call
 C
       call setMessageSource("mapFullDomainToSubDomainNPbyM")
@@ -9303,11 +9322,11 @@ C
 C
       INTEGER i,j
       INTEGER kount(2), start(2)
-      REAL(SZ), ALLOCATABLE :: data2D(:,:)
+      REAL(8), ALLOCATABLE :: data2D(:,:)
       INTEGER kount3D(3), start3D(3)
-      REAL(SZ), ALLOCATABLE :: data3D(:,:,:)
-      REAL(SZ), ALLOCATABLE :: rp(:,:) ! real part of Q (subdomain), i.e. u-vel
-      REAL(SZ), ALLOCATABLE :: ip(:,:) ! imag part of Q (subdomain), i.e. v-vel
+      REAL(8), ALLOCATABLE :: data3D(:,:,:)
+      REAL(8), ALLOCATABLE :: rp(:,:) ! real part of Q (subdomain), i.e. u-vel
+      REAL(8), ALLOCATABLE :: ip(:,:) ! imag part of Q (subdomain), i.e. v-vel
       INTEGER iret ! success or failure of the netcdf call
       INTEGER tempid
 C
@@ -9593,7 +9612,6 @@ C-----------------------------------------------------------------------
       USE CONSTANTS, ONLY: RAD2DEG
       USE MESH, ONLY : SLAM0, SFEA0, AGRID
       USE GLOBAL_3DVS, ONLY : NFEN
-      USE SIZES, ONLY : SZ
       USE NodalAttributes, ONLY : nwp, nolibf, tau0, cf, eslm
       USE VERSION
       IMPLICIT NONE
@@ -10038,7 +10056,6 @@ C     jgf49.17.02 Writes data that are common to all netCDF files
 C     to the specified file.
 C-----------------------------------------------------------------------
       subroutine putMeshVariables(ncid, myMesh)
-      USE SIZES, ONLY : SZ
       USE MESH, ONLY : DP
       USE GLOBAL, ONLY : C3D
       USE GLOBAL_3DVS, ONLY : SIGMA
@@ -10410,7 +10427,6 @@ C     jgf49.17.02 Updates data that are common to all netCDF files
 C     in the specified file.
 C-----------------------------------------------------------------------
       subroutine updateMetaData(ncid,myFile)
-      USE SIZES, ONLY : SZ
       USE GLOBAL, ONLY : ihot, nramp, rnday, dramp, h0, rundes, runid
       USE NodalAttributes, ONLY : nwp, nolibf, tau0, cf, eslm
       USE GWCE, ONLY : a00, b00, c00
@@ -10492,7 +10508,6 @@ C     they need to update in the NetCDF file.
 C-----------------------------------------------------------------------
       SUBROUTINE ReadMetaData(ncid,myFile)
 C-----------------------------------------------------------------------
-        USE SIZES,ONLY:SZ
         USE GLOBAL,ONLY:ihot,nramp,rnday,dramp,h0,np_g,ne_g,rundes,runid
         USE NodalAttributes,ONLY:nwp,nolibf,tau0,cf,eslm
         USE VERSION
@@ -10578,7 +10593,7 @@ C     was an error, it writes the error message to the screen and to the
 C     fort.16 file.
 C-----------------------------------------------------------------------
       subroutine check_err(iret)
-      USE SIZES, ONLY : SZ, myproc
+      USE SIZES, ONLY : myproc
       USE GLOBAL, ONLY : screenUnit
 #ifdef CMPI
       USE MESSENGER, ONLY : MSG_FINI
@@ -10736,7 +10751,7 @@ C     Declare the argument variables coming in from adcprep.
       REAL(8), intent(in) :: SLAM_p(:)
       REAL(8), intent(in) :: SFEA_p(:)
       INTEGER, intent(in) :: NODECODE_p(:)
-      REAL(SZ), intent(in) :: G_p
+      REAL(8), intent(in) :: G_p
       INTEGER, intent(in) :: FileFmtRev_p
       INTEGER, intent(in) :: FileFmtMinor_p
       INTEGER, intent(in) :: FileFmtMajor_p
@@ -10760,7 +10775,7 @@ C     Declare the argument variables coming in from adcprep.
       INTEGER, intent(in) :: igwp_p
       INTEGER, intent(in) :: nscougw_p
       INTEGER, intent(in) :: NM_p(:,:)
-      REAL(SZ), intent(in) :: DP_p(:)
+      REAL(8), intent(in) :: DP_p(:)
       CHARACTER(80), intent(in) :: RUNDES_p
       CHARACTER(80), intent(in) :: RUNID_p
       CHARACTER(80), intent(in) :: AGRID_p
@@ -10785,22 +10800,22 @@ C     Declare the argument variables coming in from adcprep.
       INTEGER, intent(in) :: nramp_p
       REAL(8), intent(in) :: statim_p
       REAL(8), intent(in) :: reftim_p
-      REAL(SZ), intent(in) :: rnday_p
-      REAL(SZ), intent(in) :: dramp_p
-      REAL(SZ), intent(in) :: a00_p
-      REAL(SZ), intent(in) :: b00_p
-      REAL(SZ), intent(in) :: c00_p
-      REAL(SZ), intent(in) :: h0_p
-      REAL(SZ), intent(in) :: cori_p
+      REAL(8), intent(in) :: rnday_p
+      REAL(8), intent(in) :: dramp_p
+      REAL(8), intent(in) :: a00_p
+      REAL(8), intent(in) :: b00_p
+      REAL(8), intent(in) :: c00_p
+      REAL(8), intent(in) :: h0_p
+      REAL(8), intent(in) :: cori_p
       INTEGER, intent(in) :: ntif_p
       INTEGER, intent(in) :: nbfr_p
       INTEGER, intent(in) :: myProc_p
       INTEGER, intent(in) :: screenUnit_p
       INTEGER, intent(in) :: nolibf_p
       INTEGER, intent(in) :: nwp_p
-      REAL(SZ), intent(in) :: tau0_p
-      REAL(SZ), intent(in) :: cf_p
-      REAL(SZ), intent(in) :: eslm_p
+      REAL(8), intent(in) :: tau0_p
+      REAL(8), intent(in) :: cf_p
+      REAL(8), intent(in) :: eslm_p
       INTEGER, intent(in) :: nstae_p
       INTEGER, intent(in) :: nstav_p
       INTEGER, intent(in) :: nstam_p
@@ -10811,23 +10826,23 @@ C
       INTEGER, intent(in) :: nfen_p
       INTEGER, intent(in) :: iden_p
       INTEGER, intent(in) :: islip_p
-      REAL(SZ), intent(in) :: kp_p
-      REAL(SZ), intent(in) :: z0s_p
-      REAL(SZ), intent(in) :: z0b_p
-      REAL(SZ), intent(in) :: theta1_p
-      REAL(SZ), intent(in) :: theta2_p
+      REAL(8), intent(in) :: kp_p
+      REAL(8), intent(in) :: z0s_p
+      REAL(8), intent(in) :: z0b_p
+      REAL(8), intent(in) :: theta1_p
+      REAL(8), intent(in) :: theta2_p
       INTEGER, intent(in) :: ievc_p
-      REAL(SZ), intent(in) :: evmin_p
-      REAL(SZ), intent(in) :: evcon_p
-      REAL(SZ), intent(in) :: alp1_p
-      REAL(SZ), intent(in) :: alp2_p
-      REAL(SZ), intent(in) :: alp3_p
+      REAL(8), intent(in) :: evmin_p
+      REAL(8), intent(in) :: evcon_p
+      REAL(8), intent(in) :: alp1_p
+      REAL(8), intent(in) :: alp2_p
+      REAL(8), intent(in) :: alp3_p
       INTEGER, intent(in) :: igc_p
-      REAL(SZ), intent(in) :: nlsd_p
-      REAL(SZ), intent(in) :: nvsd_p
-      REAL(SZ), intent(in) :: nltd_p
-      REAL(SZ), intent(in) :: nvtd_p
-      REAL(SZ), intent(in) :: alp4_p
+      REAL(8), intent(in) :: nlsd_p
+      REAL(8), intent(in) :: nvsd_p
+      REAL(8), intent(in) :: nltd_p
+      REAL(8), intent(in) :: nvtd_p
+      REAL(8), intent(in) :: alp4_p
       LOGICAL, intent(in) :: C3D_p
 C
       call setMessageSource("setADCIRCParameters")

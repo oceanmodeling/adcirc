@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *
 C 
 C                       M O D U L E   G W C E
@@ -57,35 +76,34 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *
 C******************************************************************************
 
       module gwce
-      use sizes, only : sz
       use global, only : DEBUG, INFO, WARNING, ERROR, logMessage, 
      &   setMessageSource, unsetMessageSource, allMessage
       implicit none
 
-      real(sz),allocatable :: lsxx(:),lsxy(:),lsyx(:),lsyy(:)
-      real(sz),allocatable :: etas0(:)      
-      real(sz),allocatable :: eta0(:)
-      real(sz) :: convcr
+      real(8),allocatable :: lsxx(:),lsxy(:),lsyx(:),lsyy(:)
+      real(8),allocatable :: etas0(:)      
+      real(8),allocatable :: eta0(:)
+      real(8) :: convcr
       integer :: isldia
       integer :: itmax
-      real(sz) :: a00,b00,c00
-      real(sz) :: dt2
-      real(sz) :: ga00 
+      real(8) :: a00,b00,c00
+      real(8) :: dt2
+      real(8) :: ga00 
 
 C     Arrays used by JCG iterative solver
       integer :: nw
       integer, allocatable :: iwksp(:)
-      real(sz), allocatable :: wksp(:)
+      real(8), allocatable :: wksp(:)
       integer, allocatable :: iparm(:)
-      real(sz), allocatable :: rparm(:)
+      real(8), allocatable :: rparm(:)
       integer :: numitr ! number of iterations per timestep 
 
 cjjw...added 2 lines
 C.....for matrix conditioning,global to allow for reading in from hotstart file
-      REAL(SZ) :: EP !jgf45.08 EP global for predictor-corrector
+      REAL(8) :: EP !jgf45.08 EP global for predictor-corrector
       !
       ! for managing datasets for aperiodic elevation specified boundaries (fort.19)
-      real(sz) :: etime1, etime2, etiminc 
+      real(8) :: etime1, etime2, etiminc 
 
       ! jgf52.30.04: Allow the inverted barometer condition to be 
       ! activated on elevation-specified boundaries so that low pressure
@@ -219,7 +237,7 @@ C
 #ifdef IEEE_DEBUG
       USE, INTRINSIC :: IEEE_ARITHMETIC
 #endif
-      USE SIZES, ONLY : sz, myproc
+      USE SIZES, ONLY : myproc
       USE GLOBAL, ONLY : GWCE_LV, COEF, COEFD, OBCCOEF, ETAS, ETA1, ETA2,
      &   ESBIN1, ESBIN2, C2DDI, C3D, CBaroclinic, CGWCE_Advec_C1,
      &   CGWCE_Advec_C2, CGWCE_Advec_NC, CGWCE_LS_2PartQ, CGWCE_LS_2PartSQ,
@@ -268,6 +286,10 @@ C... SB
       USE SUBDOMAIN, ONLY : subdomainOn, enforceBN, enforceECB, 
      &  checkChange, enforceEOB, enforceEIB, enforceGWCELVOB
       USE WIND, ONLY: PRBCKGRND_MH2O, windLimiter
+!JLW: add subgrid module
+      USE subgrid, ONLY: level0, level1, gridDepthEleETA1
+     &   , gridDepthEleETA2, wetFracAvgETA1, wetFracAvgETA2
+     &   , NCEleArray, subgridEleList, cadvEleETA2, subgridVertList
 
       IMPLICIT NONE
 
@@ -280,82 +302,86 @@ C... SB
       INTEGER OnDiag, OffDiag
 
       LOGICAL  DIE
-      REAL(SZ) A00pB00
-      REAL(SZ) BCXAvg, BCYAvg
-      REAL(SZ) BndLenO6NC    !BNDLEN2O3NC, NCBND need to be removed from global.f and put in original GWCE subroutine
-      REAL(SZ) BSXN1, BSXN2, BSXN3, BSYN1, BSYN2, BSYN3, BSXAvg, BSYAvg
-      REAL(SZ) CorifAvg
-      REAL(SZ) DPAvg, GDPAvgOAreaIE4
-      REAL(SZ) DPAvgS0, GDPAvgOAreaIE4_S0
-      REAL(SZ) DispX, DispY, DispXAvg, DispYAvg
-      REAL(SZ) E0N1, E0N2, E0N3, E0XGrad2A, E0YGrad2A
-      REAL(SZ) E1N1, E1N2, E1N3, E1XGrad2A, E1YGrad2A
-      REAL(SZ) E1N1SQ, E1N2SQ, E1N3SQ
-      REAL(SZ) ESN1, ESN2, ESN3, ESAvg
-      REAL(SZ) EVMN1, EVMN2, EVMN3, EVMXGrad, EVMYGrad, EVMAvgODT
-      REAL(SZ) EVMEle, EVMSmag
-      REAL(SZ) GA00DPAvgOAreaIE4
-      REAL(SZ) GHAvg, GHAvgOAreaIE2, GOAreaIE4
-      REAL(SZ) H1N1, H1N2, H1N3, HAvg, H1, H2
-      REAL(SZ) H2OTotalArea
-      REAL(SZ) LSXXGradA, LSXYGradA, LSYXGradA, LSYYGradA
-      REAL(SZ) LSXXEle, LSXYEle, LSYXEle, LSYYEle
-      REAL(SZ) MsFacR, MsFacLOnDiag, MsFacLOffDiag
-      REAL(SZ) MX, MY, MXAvg, MYAvg
-      REAL(SZ) JXAvg, JYAvg
-      REAL(SZ) Pr1N1, Pr1N2, Pr1N3
-      REAL(SZ) Off1N1, Off1N2, Off1N3 ! water level offsets
-      REAL(SZ) QX1N1, QX1N2, QX1N3, QY1N1, QY1N2, QY1N3, QX1Avg, QY1Avg
-      REAL(SZ) SFacAvg, SFmxAvg, SFmyAvg, sfdxfac, sfdyfac 
-      REAL(SZ) SFCXAvg, SFCYAvg, YCFACAvg, SFCXADJ, SFCYADJ, TANPHIAvg
-      REAL(SZ) T0N1,T0N2, T0N3
-      REAL(SZ) Tau0Avg, Tau0QXAvg, Tau0QYAvg
-      REAL(SZ) Tau0XGrad2A, Tau0YGrad2A, Tau0SpaVar
-      REAL(SZ) TEMP_LV_A1, TEMP_LV_A2, TEMP_LV_A3
-      REAL(SZ) TiPN1, TiPN2, TiPN3
-      REAL(SZ) U1N1,U1N2,U1N3, U1Avg
-      REAL(SZ) V1N1,V1N2,V1N3, V1Avg
-      REAL(SZ) WSXAvg, WSYAvg
+      REAL(8) A00pB00
+      REAL(8) BCXAvg, BCYAvg
+      REAL(8) BndLenO6NC    !BNDLEN2O3NC, NCBND need to be removed from global.f and put in original GWCE subroutine
+      REAL(8) BSXN1, BSXN2, BSXN3, BSYN1, BSYN2, BSYN3, BSXAvg, BSYAvg
+      REAL(8) CorifAvg
+      REAL(8) DPAvg, GDPAvgOAreaIE4
+      REAL(8) DPAvgS0, GDPAvgOAreaIE4_S0
+      REAL(8) DispX, DispY, DispXAvg, DispYAvg
+      REAL(8) E0N1, E0N2, E0N3, E0XGrad2A, E0YGrad2A
+      REAL(8) E1N1, E1N2, E1N3, E1XGrad2A, E1YGrad2A
+      REAL(8) E1N1SQ, E1N2SQ, E1N3SQ
+      REAL(8) ESN1, ESN2, ESN3, ESAvg
+      REAL(8) EVMN1, EVMN2, EVMN3, EVMXGrad, EVMYGrad, EVMAvgODT
+      REAL(8) EVMEle, EVMSmag
+      REAL(8) GA00DPAvgOAreaIE4
+      REAL(8) GHAvg, GHAvgOAreaIE2, GOAreaIE4
+      REAL(8) H1N1, H1N2, H1N3, HAvg, H1, H2
+      REAL(8) H2OTotalArea
+      REAL(8) LSXXGradA, LSXYGradA, LSYXGradA, LSYYGradA
+      REAL(8) LSXXEle, LSXYEle, LSYXEle, LSYYEle
+      REAL(8) MsFacR, MsFacLOnDiag, MsFacLOffDiag
+      REAL(8) MX, MY, MXAvg, MYAvg
+      REAL(8) JXAvg, JYAvg
+      REAL(8) Pr1N1, Pr1N2, Pr1N3
+      REAL(8) Off1N1, Off1N2, Off1N3 ! water level offsets
+      REAL(8) QX1N1, QX1N2, QX1N3, QY1N1, QY1N2, QY1N3, QX1Avg, QY1Avg
+      REAL(8) SFacAvg, SFmxAvg, SFmyAvg, sfdxfac, sfdyfac 
+      REAL(8) SFCXAvg, SFCYAvg, YCFACAvg, SFCXADJ, SFCYADJ, TANPHIAvg
+      REAL(8) T0N1,T0N2, T0N3
+      REAL(8) Tau0Avg, Tau0QXAvg, Tau0QYAvg
+      REAL(8) Tau0XGrad2A, Tau0YGrad2A, Tau0SpaVar
+      REAL(8) TEMP_LV_A1, TEMP_LV_A2, TEMP_LV_A3
+      REAL(8) TiPN1, TiPN2, TiPN3
+      REAL(8) U1N1,U1N2,U1N3, U1Avg
+      REAL(8) V1N1,V1N2,V1N3, V1Avg
+      REAL(8) WSXAvg, WSYAvg
       REAL(8) AreaIE, AreaIE2, AreaIE4
-      REAL(SZ) FDX1, FDX2, FDX3, FDY1, FDY2, FDY3
-      REAL(SZ) FDXX1, FDXX2, FDXX3, FDYY1, FDYY2, FDYY3
+      REAL(8) FDX1, FDX2, FDX3, FDY1, FDY2, FDY3
+      REAL(8) FDXX1, FDXX2, FDXX3, FDYY1, FDYY2, FDYY3
       REAL(8) TimeLoc, TimeH
-      REAL(SZ) HH1 !jgf46.02 Added for Katrina.
-      REAL(SZ) RDIAG ! jgf48.4619 Seizo parameter for fully explicit mode
+      REAL(8) HH1 !jgf46.02 Added for Katrina.
+      REAL(8) RDIAG ! jgf48.4619 Seizo parameter for fully explicit mode
       INTEGER :: j12, j13, j21, j23, j31, j32
-      REAL(SZ) :: arg, argj
-      REAL(SZ) :: celerity
-      REAL(SZ) :: etratio
+      REAL(8) :: arg, argj
+      REAL(8) :: celerity
+      REAL(8) :: etratio
       INTEGER :: ier
       INTEGER :: nbdj
-      REAL(SZ) :: rff
-      REAL(SZ) :: qforcei, qforcej
+      REAL(8) :: rff
+      REAL(8) :: qforcei, qforcej
 C...... SB
-      REAL(SZ) :: SX, SY
+      REAL(8) :: SX, SY
       INTEGER :: ROT_STATUS
 C...... SB
 C...... DW
-      REAL(SZ):: SigmaAvg, Tau0Avg_S
-      REAL(SZ):: SgN1_eta, SgN2_eta, SgN3_eta
-      REAL(SZ):: SgN1_mnx, SgN2_mnx, SgN3_mnx
-      REAL(SZ):: SgN1_mny, SgN2_mny, SgN3_mny
-      REAL(SZ):: Tau0SigmaAvg, SigmaQxAvg, SigmaQyAvg
-      REAL(SZ):: AvgSigmaHAbsU, AvgSigmaHAbsV
-      REAL(SZ):: MsFacR_S, MsFacRS_T, MsFacRS_ABC00
-      REAL(SZ):: E0AN1, E0AN2, E0AN3
-      REAL(SZ):: E1AN1, E1AN2, E1AN3
-      REAL(SZ):: E2AN1, E2AN2, E2AN3
-      REAL(SZ):: ESAN1, ESAN2, ESAN3 
-      REAL(SZ):: U1AN1, U1AN2, U1AN3
-      REAL(SZ):: V1AN1, V1AN2, V1AN3
-      REAL(SZ):: ABC00_EAN1, ABC00_EAN2, ABC00_EAN3
-      REAL(SZ):: fwsx1, fwsx2, fwsx3
-      REAL(SZ):: fwsy1, fwsy2, fwsy3
-      REAL(SZ) :: SPM1, SPM2, SPM3 
+      REAL(8):: SigmaAvg, Tau0Avg_S
+      REAL(8):: SgN1_eta, SgN2_eta, SgN3_eta
+      REAL(8):: SgN1_mnx, SgN2_mnx, SgN3_mnx
+      REAL(8):: SgN1_mny, SgN2_mny, SgN3_mny
+      REAL(8):: Tau0SigmaAvg, SigmaQxAvg, SigmaQyAvg
+      REAL(8):: AvgSigmaHAbsU, AvgSigmaHAbsV
+      REAL(8):: MsFacR_S, MsFacRS_T, MsFacRS_ABC00
+      REAL(8):: E0AN1, E0AN2, E0AN3
+      REAL(8):: E1AN1, E1AN2, E1AN3
+      REAL(8):: E2AN1, E2AN2, E2AN3
+      REAL(8):: ESAN1, ESAN2, ESAN3 
+      REAL(8):: U1AN1, U1AN2, U1AN3
+      REAL(8):: V1AN1, V1AN2, V1AN3
+      REAL(8):: ABC00_EAN1, ABC00_EAN2, ABC00_EAN3
+      REAL(8):: fwsx1, fwsx2, fwsx3
+      REAL(8):: fwsy1, fwsy2, fwsy3
+      REAL(8) :: SPM1, SPM2, SPM3 
       LOGICAL :: ETA_SPONGE = .false., GWCE_SPONGE = .false.
-      REAL(SZ) :: Ma2, Cfac = 1.0_SZ, CfacS0 = 1.0_SZ
+      REAL(8) :: Ma2, Cfac = 1.0D0, CfacS0 = 1.0D0
       INTEGER :: NNBB1, NNBB2  ! Added for VEW1D  08-11-2022 SB
-      REAL(SZ):: fBuf          !
+      REAL(8):: fBuf          !
+!JLW: adding total water depth variable for previous TS
+      REAL(8) :: H0N1, H0N2, H0N3
+      REAL(8) :: CADV1, CADV2, CADV3
+      REAL(8) :: PHIAVG1, PHIAVG2
 
       IF ( LoadAbsLayerSigma ) THEN
          IF (NumNodesAbsLayer(1) > 0 ) ETA_SPONGE = .true.
@@ -424,17 +450,27 @@ C              WJP 02.24.2018 Get the infinity norm of the matrix
                NMJ1=NMI1
                NMJ2=NMI2
                NMJ3=NMI3
-               NC1=NodeCode(NMI1)
-               NC2=NodeCode(NMI2)
-               NC3=NodeCode(NMI3)
-               NCEle=NC1*NC2*NC3*NOFF(IE)
+!JLW: add subgrid additions
+               IF(level0)THEN
+                  H1N1 = gridDepthEleETA2(IE,1)
+                  H1N2 = gridDepthEleETA2(IE,2)
+                  H1N3 = gridDepthEleETA2(IE,3)
+                  PHIAVG1 = wetFracAvgETA1(IE)
+                  PHIAVG2 = wetFracAvgETA2(IE)
+                  NCEle = NCEleArray(IE)
+               ELSE
+                  NC1=NodeCode(NMI1)
+                  NC2=NodeCode(NMI2)
+                  NC3=NodeCode(NMI3)
+                  NCEle=NC1*NC2*NC3*NOFF(IE)
+               ENDIF
 
                SFacAvg = SFacEle(IE)
 C.... Beg DW/WJP:
                SFmxAvg = SFMXEle(IE) ;
                SFmyAvg = SFMYEle(IE) ;
                sfdxfac = (1 - IFSFM)*SFacAvg + IFSFM*SFmxAvg ; 
-               sfdyfac = (1 - IFSFM)*1.0_SZ  + IFSFM*SFmyAvg ; 
+               sfdyfac = (1 - IFSFM)*1.0D0  + IFSFM*SFmyAvg ; 
                SFCXAvg = SFCXEle(IE) ;
                SFCYAvg = SFCYEle(IE) ;
                YCFACAvg = YCSFACEle(IE) ;
@@ -450,17 +486,28 @@ C.... End WJP/DW
                AreaIE2=Areas(IE)
                AreaIE =AreaIE2*0.5d0
                AreaIE4=AreaIE2*2.0d0
-
+!JLW: adding subgrid to water surface elevation gradiant term
+               IF(level0)THEN
+                  IF(subgridEleList(IE).EQ.1)THEN
+!JLW: subgrid can only be run with the non-split form of the water
+! surface gradient term
+                     DPAvg = (H1N1+H1N2+H1N3)/3.d0 
+                  ELSE
+                     DPAvg = (DP(NMI1)+DP(NMI2)+DP(NMI3))/3.d0 + 
+     &               IFNLFA*IFNL_HDP*(ETA2(NMI1) + 
+     &               ETA2(NMI2)+ETA2(NMI3))/3.d0 ; 
+                  ENDIF
+               ELSE
 C.... DW, Nov 2019 if IFNL_HDP = 1 use DP + ETA = H in the GWCE
                DPAvg = (DP(NMI1)+DP(NMI2)+DP(NMI3))/3.d0 +   ! BAVG if GWCE_NL_HDP = .FALSE.
      &              IFNLFA*IFNL_HDP*(ETA2(NMI1) + ! HAVG otherwise
      &              ETA2(NMI2)+ETA2(NMI3))/3.d0 ; 
-                  
+               ENDIF   
 C.....         WJP adjust the dispersion equation through
 C              Ali et al. formula
                if (CAliDisp) then
                   Ma2   = G*DPavg/Cs2
-                  Cfac = (1.0_SZ - 0.25_SZ*Ma2 - Ad*DPavg**Bd)**2
+                  Cfac = (1.0D0 - 0.25D0*Ma2 - Ad*DPavg**Bd)**2
                endif
                ! DMW 2022/06 Apply slope limiting to gravity
                GA00DPAvgOAreaIE4 = ALPHAL(IE)*A00*G*DPAvg*Cfac/AreaIE4
@@ -487,6 +534,13 @@ C
 !
                MsFacLOnDiag =OnDiag*AreaIE*(1.d0/DT+Tau0Avg_S/2.d0)/DT/12.d0
                MsFacLOffDiag=OffDiag*AreaIE*(1.d0/DT+Tau0Avg_S/2.d0)/DT/12.d0
+!JLW: adding subgrid to the on and off diagonal terms
+               IF(level0)THEN
+                  MSFacLOnDiag = MSFacLOnDiag*PHIAVG2 + OnDiag
+     &               *AreaIE*((PHIAVG2-PHIAVG1)/2.d0)/DT/12.d0
+                  MSFacLOffDiag = MSFacLOffDiag*PHIAVG2 + OffDiag
+     &               *AreaIE*((PHIAVG2-PHIAVG1)/2.d0)/DT/12.d0
+               ENDIF
 C
 C.......... DW
                DO JN=2,NEIMAX
@@ -743,15 +797,20 @@ C...  Compute the Lateral Stress Field using the 2 Part velocity approach (nonsy
             NM1=NM(IE,1)
             NM2=NM(IE,2)
             NM3=NM(IE,3)
-            NC1=NODECODE(NM1)
-            NC2=NODECODE(NM2)
-            NC3=NODECODE(NM3)
-            NCEle=NC1*NC2*NC3*NOFF(IE)
+!JLW: add subgrid wet/dry to lateral stress terms so we can use Smag
+            IF(level0)THEN
+               NCEle = NCEleArray(IE)
+            ELSE
+               NC1=NODECODE(NM1)
+               NC2=NODECODE(NM2)
+               NC3=NODECODE(NM3)
+               NCEle=NC1*NC2*NC3*NOFF(IE)
+            ENDIF
             SFacAvg = SFacEle(IE)
             SFmxAvg=SFMXEle(IE) ;
             SFmyAvg=SFMYEle(IE) ;
             sfdxfac=(1 - IFSFM)*SFacAvg + IFSFM*SFmxAvg ; 
-            sfdyfac=(1 - IFSFM)*1.0_SZ  + IFSFM*SFmyAvg ;            
+            sfdyfac=(1 - IFSFM)*1.0D0  + IFSFM*SFmyAvg ;            
 C........ BEG DW:
             FDX1 = FDXE(1,IE)*sfdxfac ; 
             FDX2 = FDXE(2,IE)*sfdxfac ; 
@@ -837,16 +896,21 @@ C...  Compute the Lateral Stress Field using the 2 Part flux approach (nonsymmet
             NM1=NM(IE,1)
             NM2=NM(IE,2)
             NM3=NM(IE,3)
-            NC1=NODECODE(NM1)
-            NC2=NODECODE(NM2)
-            NC3=NODECODE(NM3)
-            NCEle=NC1*NC2*NC3*NOFF(IE)
+!JLW: add subgrid wet/dry to lateral stress term so we can use Smag
+            IF(level0)THEN
+               NCEle = NCEleArray(IE)
+            ELSE
+               NC1=NODECODE(NM1)
+               NC2=NODECODE(NM2)
+               NC3=NODECODE(NM3)
+               NCEle=NC1*NC2*NC3*NOFF(IE)
+            ENDIF
             SFacAvg = SFacEle(IE)
 C..... Beg DW:
             SFmxAvg=SFMXEle(IE) ;
             SFmyAvg=SFMYEle(IE) ;
             sfdxfac=(1 - IFSFM)*SFacAvg + IFSFM*SFmxAvg ; 
-            sfdyfac=(1 - IFSFM)*1.0_SZ  + IFSFM*SFmyAvg ;            
+            sfdyfac=(1 - IFSFM)*1.0D0  + IFSFM*SFmyAvg ;            
 
             FDX1 = FDXE(1,IE)*sfdxfac ; 
             FDX2 = FDXE(2,IE)*sfdxfac ; 
@@ -939,7 +1003,8 @@ Corbitt 120322: Localized Advection
          NC1=NODECODE(NM1)
          NC2=NODECODE(NM2)
          NC3=NODECODE(NM3)
-         NCELE=NC1*NC2*NC3*NOFF(IE)
+!JLW: moving NCEle calulation further down
+!         NCELE=NC1*NC2*NC3*NOFF(IE)
          E0N1=ETA1(NM1)
          E0N2=ETA1(NM2)
          E0N3=ETA1(NM3)
@@ -964,9 +1029,29 @@ Corbitt 120322: Localized Advection
          QY1N1=QY1(NM1)
          QY1N2=QY1(NM2)
          QY1N3=QY1(NM3)
-         H1N1=DP(NM1)+IFNLFA*E1N1
-         H1N2=DP(NM2)+IFNLFA*E1N2
-         H1N3=DP(NM3)+IFNLFA*E1N3
+!JLW: similar to the LHS, look up wet area fraction, grid averaged water
+!depth, and advection
+         IF(level0)THEN
+            H0N1 = gridDepthEleETA1(IE,1)
+            H0N2 = gridDepthEleETA1(IE,2)
+            H0N3 = gridDepthEleETA1(IE,3)
+            H1N1 = gridDepthEleETA2(IE,1)
+            H1N2 = gridDepthEleETA2(IE,2)
+            H1N3 = gridDepthEleETA2(IE,3)
+            IF(level1)THEN
+               CADV1 = cadvEleETA2(IE,1)
+               CADV2 = cadvEleETA2(IE,2)
+               CADV3 = cadvEleETA2(IE,3)
+            ENDIF
+            PHIAVG1 = wetFracAvgETA1(IE)
+            PHIAVG2 = wetFracAvgETA2(IE)
+            NCEle = NCEleArray(IE)
+         ELSE
+            H1N1=DP(NM1)+IFNLFA*E1N1
+            H1N2=DP(NM2)+IFNLFA*E1N2
+            H1N3=DP(NM3)+IFNLFA*E1N3
+            NCELE=NC1*NC2*NC3*NOFF(IE)
+         ENDIF
          EVMN1=EVM(NM1)
          EVMN2=EVM(NM2)
          EVMN3=EVM(NM3)
@@ -1079,13 +1164,14 @@ C
          ENDIF
          IF (C2DDI) THEN                       !2D bottom friction
             !WJP taking into account the symmetrical friction matrix
+            ! CPB: added resynthesized tidal velocity option
             BSXN1 = TKM(1,NM1)*QX1N1 + TKM(3,NM1)*QY1N1
             BSYN1 = TKM(3,NM1)*QX1N1 + TKM(2,NM1)*QY1N1
             BSXN2 = TKM(1,NM2)*QX1N2 + TKM(3,NM2)*QY1N2
             BSYN2 = TKM(3,NM2)*QX1N2 + TKM(2,NM2)*QY1N2
             BSXN3 = TKM(1,NM3)*QX1N3 + TKM(3,NM3)*QY1N3
             BSYN3 = TKM(3,NM3)*QX1N3 + TKM(2,NM3)*QY1N3
-         ENDIF
+         ENDIF         
          IF (C3D) THEN                         !3D bottom friction
             BSXN1=BSX1(NM1)
             BSXN2=BSX1(NM2)
@@ -1104,7 +1190,7 @@ C..... DW
          SFmxAvg=SFMXEle(IE)  ;
          SFmyAvg=SFMYEle(IE) ;
          sfdxfac=(1 - IFSFM)*SFacAvg + IFSFM*SFmxAvg ; 
-         sfdyfac=(1 - IFSFM)*1.0_SZ  + IFSFM*SFmyAvg ; 
+         sfdyfac=(1 - IFSFM)*1.0D0  + IFSFM*SFmyAvg ; 
          ! continuity
          SFCXAvg=SFCXEle(IE) ;
          SFCYAvg=SFCYEle(IE) ;
@@ -1201,21 +1287,33 @@ C...     Compute elemental averages
          QX1Avg=(QX1N1+QX1N2+QX1N3)/3.d0
          QY1Avg=(QY1N1+QY1N2+QY1N3)/3.d0
          ESAvg=(ESN1+ESN2+ESN3)/3.d0
-
+!JLW: add subgrid
+         IF(level0)THEN
+            IF(subgridEleList(IE).EQ.1)THEN
+               DPAvg = (H1N1+H1N2+H1N3)/3.d0
+               DPAvgS0 = (H0N1+H0N2+H0N3)/3.d0
+            ELSE
+               DPAvg = (DP(NM1)+DP(NM2)+DP(NM3))/3.d0 +  
+     &              IFNLFA*IFNL_HDP*(E1N1 + E1N2 + E1N3)/3.d0 ; 
+               
+               DPAvgS0 = (DP(NM1)+DP(NM2)+DP(NM3))/3.d0 +  
+     &              IFNLFA*IFNL_HDP*(E0N1 + E0N2 + E0N3)/3.d0 ; 
+            ENDIF
+         ELSE
 C.....   DW, Nov 2019 
-         DPAvg = (DP(NM1)+DP(NM2)+DP(NM3))/3.d0 + ! BAVG if GWCE_HDP = .FALSE. 
-     &        IFNLFA*IFNL_HDP*(E1N1 + E1N2 + E1N3)/3.d0 ; ! H^{s}_{avg} otherwise
-         
-         DPAvgS0 = (DP(NM1)+DP(NM2)+DP(NM3))/3.d0 + ! BAVG if GWCE_HDP = .FALSE. 
-     &        IFNLFA*IFNL_HDP*(E0N1 + E0N2 + E0N3)/3.d0 ; ! H^{s-1}_{avg} otherwise
-
+            DPAvg = (DP(NM1)+DP(NM2)+DP(NM3))/3.d0 + ! BAVG if GWCE_HDP = .FALSE. 
+     &           IFNLFA*IFNL_HDP*(E1N1 + E1N2 + E1N3)/3.d0 ; ! H^{s}_{avg} otherwise
+            
+            DPAvgS0 = (DP(NM1)+DP(NM2)+DP(NM3))/3.d0 + ! BAVG if GWCE_HDP = .FALSE. 
+     &           IFNLFA*IFNL_HDP*(E0N1 + E0N2 + E0N3)/3.d0 ; ! H^{s-1}_{avg} otherwise
+         ENDIF
 C.....   WJP adjust the dispersion equation through
 C        Ali et al. formula
          if (CAliDisp) then
             Ma2    = G*DPavg/Cs2
-            Cfac   = (1.0_SZ - 0.25_SZ*Ma2 - Ad*DPavg**Bd)**2
+            Cfac   = (1.0D0 - 0.25D0*Ma2 - Ad*DPavg**Bd)**2D0
             Ma2    = G*DPavg/Cs2
-            CfacS0 = (1.0_SZ - 0.25_SZ*Ma2 - Ad*DPavgS0**Bd)**2
+            CfacS0 = (1.0D0 - 0.25D0*Ma2 - Ad*DPavgS0**Bd)**2D0
          endif
          ! DMW 2022/06 Apply slope limiting to gravity
          GDPAvgOAreaIE4 = ALPHAL(IE)*G*DPAvg*Cfac/AreaIE4
@@ -1283,6 +1381,13 @@ C.....      DMW
          
             WSXAvg=(fwsx1*WSX1(NM1)+fwsx2*WSX1(NM2)+fwsx3*WSX1(NM3))/3.d0
             WSYAvg=(fwsy1*WSY1(NM1)+fwsy2*WSY1(NM2)+fwsy3*WSY1(NM3))/3.d0
+!JLW: adding subgrid
+            IF(level0)THEN
+               IF(subgridEleList(IE).EQ.1)THEN
+                  WSXAvg = PHIAVG2*WSXAvg
+                  WSYAvg = PHIAVG2*WSYAvg
+               ENDIF
+            ENDIF
          ENDIF
 C------- END DW
 C 
@@ -1315,6 +1420,13 @@ C......... end DW
 C
          ! DMW 2022/06 Apply slope limiting to gravity
          GOAreaIE4=ALPHAL(IE)*G/AreaIE4
+!JLW: adding the wet area fraction to the time derivative terms and the
+!water surface gradient term
+         IF(level0)THEN
+            MSFacR = PHIAVG2*MSFacR - 
+     &         AreaIE*((PHIAVG2-PHIAVG1)/2.d0)/DT/12.d0
+            GOAreaIE4 = GOAreaIE4*PHIAVG2
+         ENDIF
          Tau0SpaVar=(QX1Avg*Tau0XGrad2A+QY1Avg*Tau0YGrad2A)/6.d0
          A00pB00=A00+B00
 
@@ -1354,14 +1466,49 @@ C...     Complete the JX, JY terms depending on the advection formulation
      &             +IFNLCAT*V1Avg*ESAvg/DT
          ENDIF
          IF(CGWCE_Advec_C1) THEN        !conservative v1 advection
-           JXAvg = JXAvg - IFNLCT*(
-     &              (U1N1*QX1N1*FDX1+U1N2*QX1N2*FDX2+U1N3*QX1N3*FDX3)
-     &             +(U1N1*QY1N1*FDY1+U1N2*QY1N2*FDY2+U1N3*QY1N3*FDY3))
-     &             /AreaIE2
-           JYAvg = JYAvg - IFNLCT*(
-     &              (V1N1*QX1N1*FDX1+V1N2*QX1N2*FDX2+V1N3*QX1N3*FDX3)
-     &             +(V1N1*QY1N1*FDY1+V1N2*QY1N2*FDY2+V1N3*QY1N3*FDY3))
-     &             /AreaIE2
+!JLW: adding advection corrections
+           IF(level1)THEN
+              IF(subgridEleList(IE).EQ.1)THEN
+                 JXAvg = JXAvg - IFNLCT*(
+     &                   (CADV1*U1N1*QX1N1*FDX1+CADV2*U1N2*QX1N2
+     &                   *FDX2+CADV3*U1N3*QX1N3*FDX3)
+     &                   +(CADV1*U1N1*QY1N1*FDY1+CADV2*U1N2*QY1N2
+     &                   *FDY2+CADV3*U1N3*QY1N3*FDY3))
+     &                   /AreaIE2
+                 JYAvg = JYAvg - IFNLCT*(
+     &                   (CADV1*V1N1*QX1N1*FDX1+CADV2*V1N2*QX1N2
+     &                   *FDX2+CADV3*V1N3*QX1N3*FDX3)
+     &                   +(CADV1*V1N1*QY1N1*FDY1+CADV2*V1N2*QY1N2
+     &                   *FDY2+CADV3*V1N3*QY1N3*FDY3))
+     &                   /AreaIE2
+              ELSE
+                 JXAvg = JXAvg - IFNLCT*(
+     &                   (U1N1*QX1N1*FDX1+U1N2*QX1N2*FDX2
+     &                   +U1N3*QX1N3*FDX3)
+     &                   +(U1N1*QY1N1*FDY1+U1N2*QY1N2*FDY2
+     &                   +U1N3*QY1N3*FDY3))
+     &                   /AreaIE2
+                 JYAvg = JYAvg - IFNLCT*(
+     &                   (V1N1*QX1N1*FDX1+V1N2*QX1N2*FDX2
+     &                   +V1N3*QX1N3*FDX3)
+     &                   +(V1N1*QY1N1*FDY1+V1N2*QY1N2*FDY2
+     &                   +V1N3*QY1N3*FDY3))
+     &                   /AreaIE2
+              ENDIF
+           ELSE
+              JXAvg = JXAvg - IFNLCT*(
+     &                (U1N1*QX1N1*FDX1+U1N2*QX1N2*FDX2
+     &                +U1N3*QX1N3*FDX3)
+     &                +(U1N1*QY1N1*FDY1+U1N2*QY1N2*FDY2
+     &                +U1N3*QY1N3*FDY3))
+     &                /AreaIE2
+              JYAvg = JYAvg - IFNLCT*(
+     &                (V1N1*QX1N1*FDX1+V1N2*QX1N2*FDX2
+     &                +V1N3*QX1N3*FDX3)
+     &                +(V1N1*QY1N1*FDY1+V1N2*QY1N2*FDY2
+     &                +V1N3*QY1N3*FDY3))
+     &                /AreaIE2
+            ENDIF
          ENDIF
          IF(CGWCE_Advec_C2) THEN        !conservative v2 advection
            JXAvg = JXAvg - IFNLCT*(
@@ -1875,7 +2022,16 @@ C...  JCG ITERATIVE MATRIX SOLVER
      &        IWKSP,NW,WKSP,IPARM,RPARM,IER)
          NUMITR=IPARM(1)
          DO I=1,NP
-            ETA2(I) = NODECODE(I)*ETAS(I)+ETA1(I) !COMPUTE NEW ELEVATIONS
+!JLW: add subgrid
+            IF(level0)THEN
+               IF(subgridVertList(I).EQ.1)THEN
+                  ETA2(I)=ETAS(I)+ETA1(I)
+               ELSE
+                  ETA2(I) = NODECODE(I)*ETAS(I)+ETA1(I) 
+               ENDIF
+            ELSE
+               ETA2(I) = NODECODE(I)*ETAS(I)+ETA1(I) !COMPUTE NEW ELEVATIONS
+            ENDIF
          END DO
       ELSE ! lumped LHS
          DO I = 1, NP
@@ -2041,71 +2197,71 @@ C
       INTEGER NBDI
       INTEGER OnDiag, OffDiag
 
-      REAL(SZ) A00pB00
-      REAL(SZ) BCXAvg, BCYAvg
-      REAL(SZ) BndLenO6NC    !BNDLEN2O3NC, NCBND need to be removed from global.f and put in original GWCE subroutine
-      REAL(SZ) BSXN1, BSXN2, BSXN3, BSYN1, BSYN2, BSYN3, BSXAvg, BSYAvg
-      REAL(SZ) CorifAvg
-      REAL(SZ) DPAvg, GDPAvgOAreaIE4
-      REAL(SZ) DispX, DispY, DispXAvg, DispYAvg
-      REAL(SZ) E0N1, E0N2, E0N3, E0XGrad2A, E0YGrad2A
-      REAL(SZ) E1N1, E1N2, E1N3, E1XGrad2A, E1YGrad2A
-      REAL(SZ) E1N1SQ, E1N2SQ, E1N3SQ
-      REAL(SZ) ESN1, ESN2, ESN3, ESAvg
-      REAL(SZ) EVMN1, EVMN2, EVMN3, EVMXGrad, EVMYGrad, EVMAvgODT
-      REAL(SZ) EVMEle, EVMSmag
-      REAL(SZ) GHAvg, GHAvgOAreaIE2, GOAreaIE4
-      REAL(SZ) H1N1, H1N2, H1N3, H2N1, H2N2, H2N3, HAvg, H1, H2
-      REAL(SZ) H2OTotalArea
-      REAL(SZ) LSXXGradA, LSXYGradA, LSYXGradA, LSYYGradA
-      REAL(SZ) LSXXEle, LSXYEle, LSYXEle, LSYYEle
-      REAL(SZ) MsFacR
-      REAL(SZ) MX, MY, MXAvg, MYAvg
-      REAL(SZ) JXAvg, JYAvg
-      REAL(SZ) Pr1N1, Pr1N2, Pr1N3
-      REAL(SZ) QX1N1, QX1N2, QX1N3, QY1N1, QY1N2, QY1N3, QX1Avg, QY1Avg
-      REAL(SZ) SFacAvg
-      REAL(SZ) T0N1,T0N2, T0N3
-      REAL(SZ) Tau0Avg, Tau0QXAvg, Tau0QYAvg
-      REAL(SZ) Tau0XGrad2A, Tau0YGrad2A, Tau0SpaVar
-      REAL(SZ) TEMP_LV_A1, TEMP_LV_A2, TEMP_LV_A3
-      REAL(SZ) TiPN1, TiPN2, TiPN3
-      REAL(SZ) UV0, UV1, UV2
-      REAL(SZ) U1N1,U1N2,U1N3, U1Avg
-      REAL(SZ) V1N1,V1N2,V1N3, V1Avg
-      REAL(SZ) WSXAvg, WSYAvg
+      REAL(8) A00pB00
+      REAL(8) BCXAvg, BCYAvg
+      REAL(8) BndLenO6NC    !BNDLEN2O3NC, NCBND need to be removed from global.f and put in original GWCE subroutine
+      REAL(8) BSXN1, BSXN2, BSXN3, BSYN1, BSYN2, BSYN3, BSXAvg, BSYAvg
+      REAL(8) CorifAvg
+      REAL(8) DPAvg, GDPAvgOAreaIE4
+      REAL(8) DispX, DispY, DispXAvg, DispYAvg
+      REAL(8) E0N1, E0N2, E0N3, E0XGrad2A, E0YGrad2A
+      REAL(8) E1N1, E1N2, E1N3, E1XGrad2A, E1YGrad2A
+      REAL(8) E1N1SQ, E1N2SQ, E1N3SQ
+      REAL(8) ESN1, ESN2, ESN3, ESAvg
+      REAL(8) EVMN1, EVMN2, EVMN3, EVMXGrad, EVMYGrad, EVMAvgODT
+      REAL(8) EVMEle, EVMSmag
+      REAL(8) GHAvg, GHAvgOAreaIE2, GOAreaIE4
+      REAL(8) H1N1, H1N2, H1N3, H2N1, H2N2, H2N3, HAvg, H1, H2
+      REAL(8) H2OTotalArea
+      REAL(8) LSXXGradA, LSXYGradA, LSYXGradA, LSYYGradA
+      REAL(8) LSXXEle, LSXYEle, LSYXEle, LSYYEle
+      REAL(8) MsFacR
+      REAL(8) MX, MY, MXAvg, MYAvg
+      REAL(8) JXAvg, JYAvg
+      REAL(8) Pr1N1, Pr1N2, Pr1N3
+      REAL(8) QX1N1, QX1N2, QX1N3, QY1N1, QY1N2, QY1N3, QX1Avg, QY1Avg
+      REAL(8) SFacAvg
+      REAL(8) T0N1,T0N2, T0N3
+      REAL(8) Tau0Avg, Tau0QXAvg, Tau0QYAvg
+      REAL(8) Tau0XGrad2A, Tau0YGrad2A, Tau0SpaVar
+      REAL(8) TEMP_LV_A1, TEMP_LV_A2, TEMP_LV_A3
+      REAL(8) TiPN1, TiPN2, TiPN3
+      REAL(8) UV0, UV1, UV2
+      REAL(8) U1N1,U1N2,U1N3, U1Avg
+      REAL(8) V1N1,V1N2,V1N3, V1Avg
+      REAL(8) WSXAvg, WSYAvg
 
       REAL(8) AreaIE, AreaIE2, AreaIE4
       REAL(8) FDX1, FDX2, FDX3, FDY1, FDY2, FDY3
       REAL(8) TimeLoc, TimeH
 
 ckmd   Added in parameters for the pc algorithm
-      REAL(SZ) BSX0N1, BSX0N2, BSX0N3, BSY0N1
-      REAL(SZ) BSY0N2, BSY0N3, BSX0Avg, BSY0Avg
-      REAL(SZ) BSX2N1, BSX2N2, BSX2N3, BSY2N1
-      REAL(SZ) BSY2N2, BSY2N3, BSX2Avg, BSY2Avg
-      REAL(SZ) E2N1,E2N2,E2N3
-      REAL(SZ) E0N1SQ, E0N2SQ, E0N3SQ
-      REAL(SZ) E2N1SQ, E2N2SQ, E2N3SQ
-      REAL(SZ) H0N1, H0N2, H0N3, H00
-      REAL(SZ) QX0N1, QX0N2, QX0N3, QY0N1, QY0N2, QY0N3, QX0Avg, QY0Avg
-      REAL(SZ) QX2N1, QX2N2, QX2N3, QY2N1, QY2N2, QY2N3, QX2Avg, QY2Avg
-      REAL(SZ) Tau0QX0Avg, Tau0QY0Avg, Tau0QX2Avg, Tau0QY2Avg
-      REAL(SZ) Tau0SpaVar0, Tau0SpaVar2
-      REAL(SZ) U0N1,U0N2,U0N3, U0Avg
-      REAL(SZ) V0N1,V0N2,V0N3, V0Avg
-      REAL(SZ) U2N1,U2N2,U2N3, U2Avg
-      REAL(SZ) V2N1,V2N2,V2N3, V2Avg
-      REAL(SZ) timewtgwce0,timewtgwce1,timewtgwce2,timeagflag
-      REAL(SZ) :: arg, argj
-      REAL(SZ) :: celerity
-      REAL(SZ) :: etratio
+      REAL(8) BSX0N1, BSX0N2, BSX0N3, BSY0N1
+      REAL(8) BSY0N2, BSY0N3, BSX0Avg, BSY0Avg
+      REAL(8) BSX2N1, BSX2N2, BSX2N3, BSY2N1
+      REAL(8) BSY2N2, BSY2N3, BSX2Avg, BSY2Avg
+      REAL(8) E2N1,E2N2,E2N3
+      REAL(8) E0N1SQ, E0N2SQ, E0N3SQ
+      REAL(8) E2N1SQ, E2N2SQ, E2N3SQ
+      REAL(8) H0N1, H0N2, H0N3, H00
+      REAL(8) QX0N1, QX0N2, QX0N3, QY0N1, QY0N2, QY0N3, QX0Avg, QY0Avg
+      REAL(8) QX2N1, QX2N2, QX2N3, QY2N1, QY2N2, QY2N3, QX2Avg, QY2Avg
+      REAL(8) Tau0QX0Avg, Tau0QY0Avg, Tau0QX2Avg, Tau0QY2Avg
+      REAL(8) Tau0SpaVar0, Tau0SpaVar2
+      REAL(8) U0N1,U0N2,U0N3, U0Avg
+      REAL(8) V0N1,V0N2,V0N3, V0Avg
+      REAL(8) U2N1,U2N2,U2N3, U2Avg
+      REAL(8) V2N1,V2N2,V2N3, V2Avg
+      REAL(8) timewtgwce0,timewtgwce1,timewtgwce2,timeagflag
+      REAL(8) :: arg, argj
+      REAL(8) :: celerity
+      REAL(8) :: etratio
       INTEGER :: ier
       INTEGER :: nbdj
-      REAL(SZ) :: rff
-      REAL(SZ) :: qforcei, qforcej
-      REAL(SZ):: fwsx1, fwsx2, fwsx3
-      REAL(SZ):: fwsy1, fwsy2, fwsy3
+      REAL(8) :: rff
+      REAL(8) :: qforcei, qforcej
+      REAL(8):: fwsx1, fwsx2, fwsx3
+      REAL(8):: fwsy1, fwsy2, fwsy3
 
       call setMessageSource("gwce_new_pc")
 #if defined(TIMESTEP_TRACE) || defined(ALL_TRACE)
@@ -3006,7 +3162,7 @@ C         subroutine.
 C     jgf53.dev: Moved to GWCE module. 
 C*************************************************************************
       subroutine check_slopes(it,TimeLoc)
-      USE SIZES, ONLY : SZ, mnproc, myproc
+      USE SIZES, ONLY : mnproc, myproc
       use global, only : eta2,nodecode,NOFF,ESLCOUNT,screenUnit,
      &      setMessageSource, unsetMessageSource, scratchMessage,
      &      allMessage,logMessage, DEBUG, ECHO, INFO, WARNING, ERROR,
@@ -3023,9 +3179,9 @@ C*************************************************************************
       INTEGER IE,I
       INTEGER NM1, NM2, NM3, NM123
       INTEGER NC1, NC2, NC3, NCEle, NCI
-      REAL(SZ) DEta2DX, DEta2DY, DEta2Mag
-      REAL(SZ) SFacAvg, SFmxAvg, SFmyAvg, sfdxfac, sfdyfac 
-      REAL(SZ) FDX1,FDX2,FDX3,FDY1,FDY2,FDY3
+      REAL(8) DEta2DX, DEta2DY, DEta2Mag
+      REAL(8) SFacAvg, SFmxAvg, SFmyAvg, sfdxfac, sfdyfac 
+      REAL(8) FDX1,FDX2,FDX3,FDY1,FDY2,FDY3
       REAL(8) :: AreaIE2
       integer nodeNumber ! fulldomain node number where wse slope is exceeded
       
@@ -3063,7 +3219,7 @@ C..... BEG DW/WJP
          SFmxAvg = SFMXEle(IE) ; 
          SFmyAvg = SFMYEle(IE) ; 
          sfdxfac = (1 - IFSFM)*SFacAvg + IFSFM*SFmxAvg ;
-         sfdyfac = (1 - IFSFM)*1.0_SZ + IFSFM*SFmyAvg ;
+         sfdyfac = (1 - IFSFM)*1.0D0 + IFSFM*SFmyAvg ;
 C..... END DW/WJP
          FDX1 = FDXE(1,IE)*sfdxfac ; !c FDX1=(Y(NM2)-Y(NM3))*MX !b1*mx
          FDX2 = FDXE(2,IE)*sfdxfac ; !c FDX2=(Y(NM3)-Y(NM1))*MX !b2*mx
@@ -3156,7 +3312,6 @@ C     jgf53.dev: Moved to GWCE module.
 C***********************************************************************
 C
       SUBROUTINE APPLY_SLOPE_LIMITS(ETA2Lim,LocNP)
-      USE SIZES, ONLY : SZ
       use global, only : nodecode,NOFF,IFNLFA,
      &      setMessageSource, unsetMessageSource, allMessage,
      &      logMessage, DEBUG, ECHO, INFO, WARNING, ERROR
@@ -3166,10 +3321,10 @@ C
       implicit none
       integer :: IE,NM1,NM2,NM3,NC1,NC2,NC3,NCEle
       integer, intent(in) :: LocNP
-      REAL(SZ) :: EtaN1,EtaN2,EtaN3,EtaN123
-      real(sz), intent(inout) :: Eta2lim(LocNP)
+      REAL(8) :: EtaN1,EtaN2,EtaN3,EtaN123
+      real(8), intent(inout) :: Eta2lim(LocNP)
       REAL(8) :: AreaEle
-      REAL(sz), ALLOCATABLE, SAVE :: elevSum(:) ! used if elemental slope limiter is active
+      REAL(8), ALLOCATABLE, SAVE :: elevSum(:) ! used if elemental slope limiter is active
       LOGICAL, SAVE :: firstCall = .true.
 
 

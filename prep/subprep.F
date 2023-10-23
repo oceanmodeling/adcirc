@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C
 C                ADCIRC - SUBDOMAIN MODELING PREPROCESSING MODULE
 C       
@@ -15,7 +34,6 @@ C    |                                                                      |
 C    ========================================================================
 
       module subprep
-      use sizes, only : sz
       use global, only : DEBUG, ECHO, INFO, WARNING, ERROR, 
      &  openFileForRead, scratchMessage, logMessage, allMessage,
      &  setMessageSource, unsetMessageSource
@@ -24,7 +42,7 @@ C   NCSU Subdomain Modeling variables:
        logical :: subdomainOn
        integer :: enforceBN
        integer :: psbtiminc, pncbn, pnobn, pnibn
-       real(sz) :: pebn,pubn,pvbn
+       real(8) :: pebn,pubn,pvbn
        integer,allocatable :: pcbn(:),pncbnp(:) 
        integer,allocatable :: pobn(:),pnobnp(:) 
        integer,allocatable :: pibn(:),pnibnp(:) 

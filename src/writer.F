@@ -1,3 +1,22 @@
+!-------------------------------------------------------------------------------!
+!
+! ADCIRC - The ADvanced CIRCulation model
+! Copyright (C) 1994-2023 R.A. Luettich, Jr., J.J. Westerink
+! 
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU Lesser General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+! 
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public License
+! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!-------------------------------------------------------------------------------!
 C******************************************************************************
 C MODULE WRITER
 C  This module is for writer processors which receives values from compute
@@ -6,7 +25,7 @@ C                                                              05 Feb 2007, sb
 C******************************************************************************
 C
       module writer
-      use sizes, only : sz, mnproc, mnwproc, OFF, ASCII, SPARSE_ASCII,
+      use sizes, only : mnproc, mnwproc, OFF, ASCII, SPARSE_ASCII,
      &     NETCDF3, NETCDF4, XDMF, iSplit, globalDir, meshType, 
      &     controlType, meshFileName_g, controlFileName_g
       use global, only: c3d, comm,
@@ -25,7 +44,7 @@ C
       integer, parameter :: numIntMetadata = 7
       integer :: intBuf(numIntMetadata)  ! used to transmit pieces of descript via mpi
       integer, parameter :: numRealMetadata = 2
-      real(sz) :: reBuf(numRealMetadata) ! used to transmit pieces of descript via mpi
+      real(8) :: reBuf(numRealMetadata) ! used to transmit pieces of descript via mpi
       !
       ! maximum number of buffers that each writer processor has
       ! for storing data; each writer will only allocate the space that
